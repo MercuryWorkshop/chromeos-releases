@@ -37,7 +37,7 @@ if __name__ == "__main__":
   wayback_data = wayback.get_wayback_data()
 
   print("Merging data sources")
-  merged_data = merge_data(chrome100_data, wayback_data)
+  merged_data = merge_data(chrome100_data, *wayback_data)
 
   print("Done!")
   data_path.mkdir(exist_ok=True)

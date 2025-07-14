@@ -12,9 +12,20 @@ base_path = pathlib.Path(__file__).resolve().parent
 downloads_path = base_path / "downloads" / "wayback"
 snapshots_path = downloads_path / "snapshots"
 
-chrome_dash_url = "https://chromiumdash.appspot.com/cros/fetch_serving_builds?deviceCategory=ChromeOS"
-cdx_api_url = f"http://web.archive.org/cdx/search/cdx?output=json&url={chrome_dash_url}"
-cdx_data_path = downloads_path / "cdx.json"
+device_categories = ["Chrome OS", "ChromeOS", "Chrome OS Flex", "ChromeOS Flex", "Google Meet Hardware"]
+
+chrome_dash_url_template = "https://chromiumdash.appspot.com/cros/fetch_serving_builds?deviceCategory={category}"
+cdx_api_url_template = "http://web.archive.org/cdx/search/cdx?output=json&url={url}"
+
+"""
+todo: also check the following urls:
+  https://dl.google.com/dl/edgedl/chromeos/recovery/recovery.json
+  https://dl.google.com/dl/edgedl/chromeos/recovery/recovery2.json
+  https://dl.google.com/dl/edgedl/chromeos/recovery/onhub_recovery.json
+  https://dl.google.com/dl/edgedl/chromeos/recovery/workspaceHardware_recovery2.json
+  https://dl.google.com/dl/edgedl/chromeos/recovery/cloudready_recovery.json
+  https://dl.google.com/dl/edgedl/chromeos/recovery/cloudready_recovery2.json
+"""
 
 dl_url_regex = r"https://dl\.google\.com/dl/edgedl/chromeos/recovery/chromeos_([\d\.]+?)_(.+?)_recovery_(.+?)_.+?\.bin\.zip"
 dl_dates_path = downloads_path / "dates.json"
@@ -32,11 +43,16 @@ def parse_wayback_cdx(cdx_data):
     timestamps.append(row[timestamp_index])
   return timestamps
 
-def fetch_wayback_cdx():
+def fetch_wayback_cdx(category):
+  cdx_data_path = downloads_path / f"{category.replace(' ', '_')}_cdx.json"
+
   if cdx_data_path.exists():
     cdx_json = json.loads(cdx_data_path.read_text())
     if time.time() - cdx_json["updated"] < 3600:
       return cdx_json["data"]
+
+  chrome_dash_url = chrome_dash_url_template.format(category=category)
+  cdx_api_url = cdx_api_url_template.format(url=chrome_dash_url)
   
   print(f"GET {cdx_api_url}")
   cdx_response = session.get(cdx_api_url)
@@ -48,18 +64,20 @@ def fetch_wayback_cdx():
   cdx_data_path.write_text(json.dumps(cdx_json, indent=2))
   return cdx_data
 
-def fetch_wayback_snapshots():
-  cdx_data = fetch_wayback_cdx()
+def fetch_wayback_snapshots(category):
+  cdx_data = fetch_wayback_cdx(category)
 
   snapshots = []
   for timestamp in parse_wayback_cdx(cdx_data):
-    snapshot_path = snapshots_path / f"{timestamp}.json"
+    snapshot_path = snapshots_path / f"{category.replace(' ', '_')}_{timestamp}.json"
     
     if snapshot_path.exists():
       snapshot = json.loads(snapshot_path.read_text())
     
     else:
+      chrome_dash_url = chrome_dash_url_template.format(category=category)
       identity_url = f"https://web.archive.org/web/{timestamp}id_/{chrome_dash_url}"
+
       print(f"GET {identity_url}")
       snapshot_response = session.get(identity_url)
       snapshot = snapshot_response.json()
@@ -139,13 +157,16 @@ def fetch_modified_dates(data):
     dl_dates_path.write_text(json.dumps(dates, indent=2))
 
 def get_wayback_data():
-  downloads_path.mkdir(exist_ok=True)
-  snapshots_path.mkdir(exist_ok=True)
-  snapshots = fetch_wayback_snapshots()
-  wayback_data = parse_wayback_snapshots(snapshots)
-  fetch_modified_dates(wayback_data)
+  data_sources = []
 
-  return wayback_data
+  for category in device_categories:
+    downloads_path.mkdir(exist_ok=True)
+    snapshots_path.mkdir(exist_ok=True)
+    snapshots = fetch_wayback_snapshots(category)
+    wayback_data = parse_wayback_snapshots(snapshots)
+    fetch_modified_dates(wayback_data)
+
+  return data_sources
 
 if __name__ == "__main__":
   get_wayback_data()

@@ -101,7 +101,6 @@ def parse_wayback_snapshots(snapshots):
       "chrome_version": versions[platform_version],
       "channel": channel,
       "last_modified": None,
-      "last_modified_unix": None,
       "url": dl_url
     }
 

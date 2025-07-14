@@ -1,17 +1,23 @@
 import pathlib
 import json
 import time
-from urllib3.util.retry import Retry
+import re
+from datetime import datetime
 
 import requests
+from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 
 base_path = pathlib.Path(__file__).resolve().parent
 downloads_path = base_path / "downloads" / "wayback"
+snapshots_path = downloads_path / "snapshots"
 
 chrome_dash_url = "https://chromiumdash.appspot.com/cros/fetch_serving_builds?deviceCategory=ChromeOS"
 cdx_api_url = f"http://web.archive.org/cdx/search/cdx?output=json&url={chrome_dash_url}"
 cdx_data_path = downloads_path / "cdx.json"
+
+dl_url_regex = r"https://dl\.google\.com/dl/edgedl/chromeos/recovery/chromeos_([\d\.]+?)_(.+?)_recovery_(.+?)_.+?\.bin\.zip"
+dl_dates_path = downloads_path / "dates.json"
 
 session = requests.Session()
 retry = Retry(connect=10, backoff_factor=0.5)
@@ -32,8 +38,9 @@ def fetch_wayback_cdx():
     if time.time() - cdx_json["updated"] < 3600:
       return cdx_json["data"]
   
-  cdx_request = session.get(cdx_api_url)
-  cdx_data = cdx_request.json()
+  print(f"GET {cdx_api_url}")
+  cdx_response = session.get(cdx_api_url)
+  cdx_data = cdx_response.json()
   cdx_json = {
     "updated": time.time(),
     "data": cdx_data
@@ -46,22 +53,100 @@ def fetch_wayback_snapshots():
 
   snapshots = []
   for timestamp in parse_wayback_cdx(cdx_data):
-    snapshot_path = downloads_path / f"{timestamp}.json"
+    snapshot_path = snapshots_path / f"{timestamp}.json"
     
     if snapshot_path.exists():
       snapshot = json.loads(snapshot_path.read_text())
     
     else:
       identity_url = f"https://web.archive.org/web/{timestamp}id_/{chrome_dash_url}"
-      print(f"Downloading {identity_url}")
-      snapshot_request = session.get(identity_url)
-      snapshot = snapshot_request.json()
+      print(f"GET {identity_url}")
+      snapshot_response = session.get(identity_url)
+      snapshot = snapshot_response.json()
       snapshot_path.write_text(json.dumps(snapshot, indent=2))
     
     snapshots.append(snapshot)
+  
+  return snapshots
+
+def parse_board_data(board_data, dl_urls, versions):
+  for key, value in board_data.items():
+    if key == "pushRecoveries":
+      dl_urls |= set(value.values())
+
+    if isinstance(value, dict):
+      if "version" in value:
+        versions[value["version"]] = value["chromeVersion"]
+      else:
+        parse_board_data(value, dl_urls, versions)
+
+def parse_wayback_snapshots(snapshots):
+  versions = {}
+  dl_urls = set()
+
+  for snapshot in snapshots:
+    for board, board_data in snapshot["builds"].items():
+      parse_board_data(board_data, dl_urls, versions)
+  
+  data = {}
+  for dl_url in dl_urls:
+    matches = re.findall(dl_url_regex, dl_url)[0]
+    platform_version, board, channel = matches
+
+    if not platform_version in versions:
+      continue
+
+    image = {
+      "platform_version": platform_version,
+      "chrome_version": versions[platform_version],
+      "channel": channel,
+      "last_modified": None,
+      "last_modified_unix": None,
+      "url": dl_url
+    }
+
+    if not board in data:
+      data[board] = []
+    data[board].append(image)
+  
+  return data
+
+def fetch_modified_dates(data):
+  dates = {}
+  if dl_dates_path.exists():
+    dates = json.loads(dl_dates_path.read_text())
+  
+  i = 1
+  for board, images in data.items():
+    for image in images:
+      dl_url = image["url"]
+      
+      if dl_url in dates:
+        last_modified = dates[dl_url]
+      
+      else:
+        print(f"HEAD ({i}) {dl_url}")
+        i += 1
+        dl_response = session.head(dl_url)
+        timestamp_raw = dl_response.headers["Last-Modified"]
+        
+        timestamp_pattern = "%a, %d %b %Y %H:%M:%S %Z"
+        last_modified_dt = datetime.strptime(timestamp_raw, timestamp_pattern)
+        last_modified = int((last_modified_dt - datetime(1970, 1, 1)).total_seconds())
+        dates[dl_url] = last_modified
+      
+      image["last_modified"] = last_modified
+    
+    dl_dates_path.write_text(json.dumps(dates, indent=2))
 
 def get_wayback_data():
-  fetch_wayback_snapshots()
+  downloads_path.mkdir(exist_ok=True)
+  snapshots_path.mkdir(exist_ok=True)
+  snapshots = fetch_wayback_snapshots()
+  wayback_data = parse_wayback_snapshots(snapshots)
+  fetch_modified_dates(wayback_data)
+
+  return wayback_data
 
 if __name__ == "__main__":
   get_wayback_data()

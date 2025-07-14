@@ -9,16 +9,15 @@ base_path = pathlib.Path(__file__).resolve().parent
 downloads_path = base_path / "downloads" / "chrome100"
 
 chrome100_db_path = downloads_path / "chrome100.db"
-chrome100_data_path = downloads_path / "chrome100.json"
 chrome100_db_url = "https://cdn.jsdelivr.net/npm/chrome-versions@1.1.5/dist/chrome.db"
 chrome100_dl_template = "https://dl.google.com/dl/edgedl/chromeos/recovery/chromeos_{platform}_{board}_recovery_{channel}_{mp_token}{mp_key}.bin.zip"
 
 def fetch_chrome100_db():
   if chrome100_db_path.exists():
     return
-  print(f"Downloading {chrome100_db_url}")
-  db_request = requests.get(chrome100_db_url)
-  chrome100_db_path.write_bytes(db_request.content)
+  print(f"GET {chrome100_db_url}")
+  db_response = requests.get(chrome100_db_url)
+  chrome100_db_path.write_bytes(db_response.content)
 
 def read_chrome100_db():
   conn = sqlite3.connect(chrome100_db_path)
@@ -37,33 +36,25 @@ def read_chrome100_db():
 
     image_data["mp_key"] = "" if image_data["mp_key"] == 1 else f"-v{image_data['mp_key']}"
     last_modified_dt = datetime.strptime(image_data["last_modified"], "%Y-%m-%dT%H:%M:%SZ")
-    last_modified_unix = int((last_modified_dt - datetime(1970, 1, 1)).total_seconds())
+    last_modified = int((last_modified_dt - datetime(1970, 1, 1)).total_seconds())
 
     image = {
       "platform_version": image_data["platform"],
       "chrome_version": image_data["chrome"],
       "channel": image_data["channel"],
-      "last_modified": image_data["last_modified"],
-      "last_modified_unix": last_modified_unix,
+      "last_modified": last_modified,
       "url": chrome100_dl_template.format(**image_data)
     }
     data[board].append(image)
-    
-  data_sorted = {}
-  for board, images in data.items():
-    data_sorted[board] = list(sorted(images, key=lambda x: x["last_modified_unix"]))
-  
-  return data_sorted
+
+  return data
 
 def get_chrome100_data():
-  if chrome100_data_path.exists():
-    return json.loads(chrome100_data_path.read_text())
-
   downloads_path.mkdir(exist_ok=True)
   fetch_chrome100_db()
   chrome100_data = read_chrome100_db()
-  chrome100_data_path.write_text(json.dumps(chrome100_data, indent=2))
-
+  
   return chrome100_data
 
-get_chrome100_data()
+if __name__ == "__main__":
+  get_chrome100_data()

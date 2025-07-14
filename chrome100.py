@@ -6,15 +6,16 @@ from datetime import datetime
 import requests
 
 base_path = pathlib.Path(__file__).resolve().parent
-downloads_path = base_path / "downloads"
-data_path = base_path / "data"
+downloads_path = base_path / "downloads" / "chrome100"
 
 chrome100_db_path = downloads_path / "chrome100.db"
 chrome100_data_path = downloads_path / "chrome100.json"
 chrome100_db_url = "https://cdn.jsdelivr.net/npm/chrome-versions@1.1.5/dist/chrome.db"
 chrome100_dl_template = "https://dl.google.com/dl/edgedl/chromeos/recovery/chromeos_{platform}_{board}_recovery_{channel}_{mp_token}{mp_key}.bin.zip"
 
-def fetch_chrome100_data():
+def fetch_chrome100_db():
+  if chrome100_db_path.exists():
+    return
   print(f"Downloading {chrome100_db_url}")
   db_request = requests.get(chrome100_db_url)
   chrome100_db_path.write_bytes(db_request.content)
@@ -47,21 +48,22 @@ def read_chrome100_db():
       "url": chrome100_dl_template.format(**image_data)
     }
     data[board].append(image)
-  
+    
   data_sorted = {}
   for board, images in data.items():
-    data_sorted[board] = images.sort(key=lambda x: x["last_modified_unix"])
+    data_sorted[board] = list(sorted(images, key=lambda x: x["last_modified_unix"]))
   
   return data_sorted
 
-def main():
-  downloads_path.mkdir(exist_ok=True)
-  data_path.mkdir(exist_ok=True)
+def get_chrome100_data():
+  if chrome100_data_path.exists():
+    return json.loads(chrome100_data_path.read_text())
 
-  if not chrome100_db_path.exists():
-    fetch_chrome100_data()
+  downloads_path.mkdir(exist_ok=True)
+  fetch_chrome100_db()
   chrome100_data = read_chrome100_db()
   chrome100_data_path.write_text(json.dumps(chrome100_data, indent=2))
 
-if __name__ == "__main__":
-  main()
+  return chrome100_data
+
+get_chrome100_data()

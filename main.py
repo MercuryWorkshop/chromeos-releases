@@ -1,5 +1,6 @@
 import pathlib
 import json
+from collections import defaultdict
 
 import chrome100
 import wayback
@@ -13,14 +14,11 @@ class HashableImageDict(dict):
     return hash(self["url"])
 
 def merge_data(*data_sources):
-  merged_sets = {}
+  merged_sets = defaultdict(set)
   merged = {}
 
   for data in data_sources:
     for board, images in data.items():
-      if not board in merged:
-        merged_sets[board] = set()
-
       items = set(HashableImageDict(image) for image in images)
       merged_sets[board] |= items
   

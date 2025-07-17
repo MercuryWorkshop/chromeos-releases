@@ -1,6 +1,7 @@
 import pathlib
 import sqlite3
 import json
+from collections import defaultdict
 from datetime import datetime
 
 import requests
@@ -28,7 +29,7 @@ def read_chrome100_db():
   raw_data = [dict(row) for row in rows]
   conn.close()
 
-  data = {}
+  data = defaultdict(list)
   for image_data in raw_data:
     board = image_data["board"]
     if not board in data:

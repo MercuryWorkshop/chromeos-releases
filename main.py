@@ -25,7 +25,10 @@ def merge_data(*data_sources):
   for board, images_set in merged_sets.items():
     images = [dict(image) for image in images_set]
     images.sort(key=lambda x: x["last_modified"])
-    merged[board] = images
+    merged[board] = {
+      "images": images,
+      "brand_names": list(wayback.device_names[board])
+    }
   
   return dict(sorted(merged.items()))
 

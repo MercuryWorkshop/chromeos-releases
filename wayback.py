@@ -32,6 +32,7 @@ session.mount("http://", adapter)
 session.mount("https://", adapter)
 
 versions = {}
+device_names = defaultdict(set)
 
 def parse_wayback_cdx(cdx_data):
   timestamps = []
@@ -81,23 +82,25 @@ def fetch_wayback_snapshots(url, path):
   
   return snapshots
 
-def parse_board_data(board_data, dl_urls):
+def parse_board_data(board, board_data, dl_urls):
   for key, value in board_data.items():
     if key == "pushRecoveries":
       dl_urls |= set(value.values())
+    elif key == "brandNames":
+      device_names[board] |= set(value)
 
-    if isinstance(value, dict):
+    elif isinstance(value, dict):
       if "version" in value:
         versions[value["version"]] = value["chromeVersion"]
       else:
-        parse_board_data(value, dl_urls)
+        parse_board_data(board, value, dl_urls)
 
 def parse_dash_snapshots(snapshots):
   dl_urls = set()
 
   for snapshot in snapshots:
     for board, board_data in snapshot["builds"].items():
-      parse_board_data(board_data, dl_urls)
+      parse_board_data(board, board_data, dl_urls)
   
   data = defaultdict(list)
   for dl_url in dl_urls:

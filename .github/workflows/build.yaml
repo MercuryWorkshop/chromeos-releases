@@ -1,0 +1,31 @@
+on: [push]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+      
+    name: Build Chrome OS releases database
+    steps:
+      - name: download repo
+        uses: actions/checkout@v4
+      
+      - name: run build
+        run: |
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip3 install -r requirements.txt
+          python3 main.py
+
+      - name: upload database as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: data
+          path: data/data.json
+          compression-level: 9
+      
+      - name: upload downloads as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: downloads
+          path: downloads/
+          compression-level: 9

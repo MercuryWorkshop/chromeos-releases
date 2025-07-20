@@ -2,6 +2,7 @@ import pathlib
 import json
 from collections import defaultdict
 
+import googleblog
 import chrome100
 import wayback
 
@@ -35,6 +36,8 @@ def merge_data(*data_sources):
 if __name__ == "__main__":
   print("Loading data sources")
   chrome100_data = chrome100.get_chrome100_data()
+  blog_versions = googleblog.fetch_all_versions()
+  wayback.versions.update(blog_versions)
   wayback_data = wayback.get_wayback_data()
 
   print("Merging data sources")

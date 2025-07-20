@@ -177,7 +177,7 @@ def fetch_modified_dates(data):
       
       image["last_modified"] = last_modified
     
-    dl_dates_path.write_text(json.dumps(dates, indent=2))
+  dl_dates_path.write_text(json.dumps(dates, indent=2))
 
 def get_wayback_data():
   data_sources = []

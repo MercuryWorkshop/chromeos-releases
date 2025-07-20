@@ -1,0 +1,17 @@
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+      
+    name: Trigger Internet Archive snapshots
+    steps:
+      - name: download repo
+        uses: actions/checkout@v4
+      
+      - name: trigger archives
+        run: |
+          env TOKEN="${{ secrets.IA_API_KEY }}" ./cron_archive.sh

@@ -6,8 +6,11 @@ from datetime import datetime
 
 import requests
 
-base_path = pathlib.Path(__file__).resolve().parent
-downloads_path = base_path / "downloads" / "chrome100"
+import common
+
+#this module fetches historical data from the chrome100.dev database which is no longer updated
+
+downloads_path = common.base_path / "downloads" / "chrome100"
 
 chrome100_db_path = downloads_path / "chrome100.db"
 chrome100_db_url = "https://cdn.jsdelivr.net/npm/chrome-versions@1.1.5/dist/chrome.db"
@@ -39,14 +42,19 @@ def read_chrome100_db():
     last_modified_dt = datetime.strptime(image_data["last_modified"], "%Y-%m-%dT%H:%M:%SZ")
     last_modified = int((last_modified_dt - datetime(1970, 1, 1)).total_seconds())
 
+    url = chrome100_dl_template.format(**image_data)
+
     image = {
       "platform_version": image_data["platform"],
       "chrome_version": image_data["chrome"],
       "channel": image_data["channel"],
       "last_modified": last_modified,
-      "url": chrome100_dl_template.format(**image_data)
+      "url": url
     }
     data[board].append(image)
+
+    common.versions[image["platform_version"]] = image["chrome_version"]
+    common.dates[url] = last_modified
 
   return data
 

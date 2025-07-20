@@ -1,4 +1,3 @@
-import pathlib
 import re
 import json
 import urllib.parse as urlparse
@@ -6,8 +5,11 @@ import urllib.parse as urlparse
 import requests
 import lxml.html
 
-base_path = pathlib.Path(__file__).resolve().parent
-downloads_path = base_path / "downloads" / "googleblog"
+import common
+
+#this module generates a mapping of platform versions to chrome versions by scraping the google releases blog
+
+downloads_path = common.base_path / "downloads" / "googleblog"
 
 start_url = "https://chromereleases.googleblog.com/search?updated-max=2008-10-03T10:59:00-07:00&max-results=20&reverse-paginate=true"
 
@@ -20,14 +22,16 @@ def fetch_blog_page(url):
 
   page_info_path = downloads_path / f"{updated_max}.json"
   if page_info_path.exists():
-    return json.loads(page_info_path.read_text())
+    page_info = json.loads(page_info_path.read_text())
+    common.versions.update(page_info["versions"])
+    return page_info["next_url"]
 
   print(f"GET {url}")
   response = requests.get(url)
   document = lxml.html.fromstring(response.text)
 
   post_divs = document.cssselect(".post")
-  versions = {}
+  page_versions = {}
 
   for post_div in post_divs:
     label_links = post_div.cssselect(".label")
@@ -46,7 +50,7 @@ def fetch_blog_page(url):
     if len(chrome_versions) != 1 or len(platform_versions) != 1:
       continue
     
-    versions[platform_versions.pop()] = chrome_versions.pop()
+    page_versions[platform_versions.pop()] = chrome_versions.pop()
   
   next_link = document.cssselect(".blog-pager-newer-link")[0]
   next_url = next_link.get("href")
@@ -54,22 +58,19 @@ def fetch_blog_page(url):
     next_url = None
   
   page_info = {
-    "versions": versions,
+    "versions": page_versions,
     "next_url": next_url
   }
+  common.versions.update(page_versions)
+
   if next_url:
     page_info_str = json.dumps(page_info, indent=2)
     page_info_path.write_text(page_info_str)
-  return page_info
+  return next_url
 
 def fetch_all_versions():
-  versions = {}
   downloads_path.mkdir(exist_ok=True, parents=True)
 
   url = start_url
   while url:
-    page_info = fetch_blog_page(url)
-    url = page_info["next_url"]
-    versions.update(page_info["versions"])
-  
-  return versions
+    url = fetch_blog_page(url)

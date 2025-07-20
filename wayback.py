@@ -9,6 +9,10 @@ import requests
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 
+import common
+
+#this module fetches all recovery image data from web.archive.org
+
 base_path = pathlib.Path(__file__).resolve().parent
 downloads_path = base_path / "downloads" / "wayback"
 
@@ -31,7 +35,6 @@ adapter = HTTPAdapter(max_retries=retry)
 session.mount("http://", adapter)
 session.mount("https://", adapter)
 
-versions = {}
 device_names = defaultdict(set)
 
 def parse_wayback_cdx(cdx_data):
@@ -91,7 +94,7 @@ def parse_board_data(board, board_data, dl_urls):
 
     elif isinstance(value, dict):
       if "version" in value:
-        versions[value["version"]] = value["chromeVersion"]
+        common.versions[value["version"]] = value["chromeVersion"]
       else:
         parse_board_data(board, value, dl_urls)
 
@@ -107,12 +110,12 @@ def parse_dash_snapshots(snapshots):
     matches = re.findall(dl_url_regex, dl_url)[0]
     platform_version, board, channel = matches
 
-    if not platform_version in versions:
+    if not platform_version in common.versions:
       continue
 
     image = {
       "platform_version": platform_version,
-      "chrome_version": versions[platform_version],
+      "chrome_version": common.versions[platform_version],
       "channel": channel,
       "last_modified": None,
       "url": dl_url
@@ -133,8 +136,8 @@ def prase_recovery_data(snapshots):
       if "chrome_version" in item:
         chrome_version = item["chrome_version"]
       else:
-        if platform_version in versions:
-          chrome_version = versions[platform_version]
+        if platform_version in common.versions:
+          chrome_version = common.versions[platform_version]
         else:
           continue
 
@@ -163,11 +166,13 @@ def fetch_modified_dates(data):
       
       if dl_url in dates:
         last_modified = dates[dl_url]
+      elif dl_url in common.dates:
+        last_modified = common.dates[dl_url]
       
       else:
         print(f"HEAD ({i}) {dl_url}")
         i += 1
-        dl_response = session.head(dl_url)
+        dl_response = requests.head(dl_url)
         timestamp_raw = dl_response.headers["Last-Modified"]
         
         timestamp_pattern = "%a, %d %b %Y %H:%M:%S %Z"
@@ -178,6 +183,7 @@ def fetch_modified_dates(data):
       image["last_modified"] = last_modified
     
   dl_dates_path.write_text(json.dumps(dates, indent=2))
+  common.dates.update(dates)
 
 def get_wayback_data():
   data_sources = []

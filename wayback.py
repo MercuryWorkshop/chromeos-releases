@@ -6,9 +6,6 @@ from collections import defaultdict
 from datetime import datetime
 
 import requests
-from urllib3.util.retry import Retry
-from requests.adapters import HTTPAdapter
-
 import common
 
 #this module fetches all recovery image data from web.archive.org
@@ -29,12 +26,6 @@ cdx_api_url_template = "http://web.archive.org/cdx/search/cdx?output=json&url={u
 dl_url_regex = r"https://dl\.google\.com/dl/edgedl/chromeos/recovery/chromeos_([\d\.]+?)_(.+?)_recovery_(.+?)_.+?\.bin\.zip"
 dl_dates_path = downloads_path / "dates.json"
 
-session = requests.Session()
-retry = Retry(connect=10, backoff_factor=0.5)
-adapter = HTTPAdapter(max_retries=retry)
-session.mount("http://", adapter)
-session.mount("https://", adapter)
-
 device_names = defaultdict(set)
 
 def parse_wayback_cdx(cdx_data):
@@ -53,7 +44,7 @@ def fetch_wayback_cdx(cdx_api_url, path):
       return cdx_json["data"]
   
   print(f"GET {cdx_api_url}")
-  cdx_response = session.get(cdx_api_url)
+  cdx_response = common.session.get(cdx_api_url)
   cdx_data = cdx_response.json()
   cdx_json = {
     "updated": time.time(),
@@ -77,7 +68,7 @@ def fetch_wayback_snapshots(url, path):
       identity_url = f"https://web.archive.org/web/{timestamp}id_/{url}"
 
       print(f"GET {identity_url}")
-      snapshot_response = session.get(identity_url)
+      snapshot_response = common.session.get(identity_url)
       snapshot = snapshot_response.json()
       snapshot_path.write_text(json.dumps(snapshot, indent=2))
     

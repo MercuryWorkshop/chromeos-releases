@@ -1,8 +1,8 @@
 import re
 import json
+import time
 import urllib.parse as urlparse
 
-import requests
 import lxml.html
 
 import common
@@ -27,7 +27,7 @@ def fetch_blog_page(url):
     return page_info["next_url"]
 
   print(f"GET {url}")
-  response = requests.get(url)
+  response = common.session.get(url)
   document = lxml.html.fromstring(response.text)
 
   post_divs = document.cssselect(".post")
@@ -73,4 +73,8 @@ def fetch_all_versions():
 
   url = start_url
   while url:
-    url = fetch_blog_page(url)
+    try:
+      url = fetch_blog_page(url)
+    except IndexError:
+      time.sleep(5)
+      url = fetch_blog_page(url)

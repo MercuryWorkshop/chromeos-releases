@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#this script triggers internet archive snapshots for the following urls
+
 urls=(
   "https://chromiumdash.appspot.com/cros/fetch_serving_builds?deviceCategory=ChromeOS"
   "https://chromiumdash.appspot.com/cros/fetch_serving_builds?deviceCategory=Google%20Meet%20Hardware"
@@ -21,7 +23,8 @@ for url in "${urls[@]}"; do
     -H "Accept: application/json" \
     -H "Authorization: $TOKEN" \
     -d"url=$url" \
-    --retry 5
+    --retry 5 \
+    -sS > /dev/null
   
   echo
   sleep 20

@@ -20,7 +20,7 @@ def fetch_blog_page(url):
   url_parsed = urlparse.urlparse(url)
   updated_max = urlparse.parse_qs(url_parsed.query)["updated-max"][0]
 
-  page_info_path = downloads_path / f"{updated_max}.json"
+  page_info_path = downloads_path / f"{updated_max.replace(':', '_')}.json"
   if page_info_path.exists():
     page_info = json.loads(page_info_path.read_text())
     common.versions.update(page_info["versions"])

@@ -18,3 +18,7 @@ Run the script:
 ```
 python3 main.py
 ```
+
+## Copyright
+
+All rights reserved.

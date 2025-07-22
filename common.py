@@ -1,4 +1,5 @@
 import pathlib
+from collections import defaultdict
 
 import requests
 from urllib3.util.retry import Retry
@@ -14,3 +15,5 @@ session.mount("https://", adapter)
 
 versions = {}
 dates = {}
+hwid_matches = defaultdict(set)
+device_names = defaultdict(set)

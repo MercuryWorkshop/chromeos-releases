@@ -2,6 +2,7 @@ import pathlib
 import json
 from collections import defaultdict
 
+import common
 import googleblog
 import chrome100
 import wayback
@@ -28,7 +29,8 @@ def merge_data(*data_sources):
     images.sort(key=lambda x: x["last_modified"])
     merged[board] = {
       "images": images,
-      "brand_names": list(wayback.device_names[board])
+      "brand_names": list(common.device_names[board]),
+      "hwid_matches": list(common.hwid_matches[board])
     }
   
   return dict(sorted(merged.items()))

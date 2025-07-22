@@ -26,7 +26,6 @@ cdx_api_url_template = "http://web.archive.org/cdx/search/cdx?output=json&url={u
 dl_url_regex = r"https://dl\.google\.com/dl/edgedl/chromeos/recovery/chromeos_([\d\.]+?)_(.+?)_recovery_(.+?)_.+?\.bin\.zip"
 dl_dates_path = downloads_path / "dates.json"
 
-device_names = defaultdict(set)
 
 def parse_wayback_cdx(cdx_data):
   timestamps = []
@@ -81,7 +80,7 @@ def parse_board_data(board, board_data, dl_urls):
     if key == "pushRecoveries":
       dl_urls |= set(value.values())
     elif key == "brandNames":
-      device_names[board] |= set(value)
+      common.device_names[board] |= set(value)
 
     elif isinstance(value, dict):
       if "version" in value:
@@ -123,6 +122,7 @@ def prase_recovery_data(snapshots):
     for item in snapshot:
       matches = re.findall(dl_url_regex, item["url"])[0]
       platform_version, board, channel = matches
+      common.hwid_matches[board].add(item["hwidmatch"])
 
       if "chrome_version" in item:
         chrome_version = item["chrome_version"]

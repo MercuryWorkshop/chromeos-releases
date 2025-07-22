@@ -29,3 +29,15 @@ jobs:
           name: downloads
           path: downloads/
           compression-level: 9
+      
+      - name: publish database
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "<>"
+          cd data
+          git clone "https://${{ secrets.GH_TOKEN }}@github.com/MercuryWorkshop/chromeos-releases-data" -b main
+          cd chromeos-releases-data
+          cp ../data.json ./
+          git add .
+          git commit -m "update data.json"
+          git push origin main

@@ -84,7 +84,8 @@ def parse_board_data(board, board_data, dl_urls):
 
     elif isinstance(value, dict):
       if "version" in value:
-        common.versions[value["version"]] = value["chromeVersion"]
+        if not value["version"] in common.versions:
+          common.versions[value["version"]] = value["chromeVersion"]
       else:
         parse_board_data(board, value, dl_urls)
 

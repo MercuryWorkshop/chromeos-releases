@@ -32,7 +32,7 @@ def merge_data(*data_sources):
       "channel": "stable-channel",
       "last_modified": 0,
       "url": "https://github.com/MercuryWorkshop/chromeos-releases-data",
-      "__licnese": "https://github.com/MercuryWorkshop/chromeos-releases-data/blob/main/LICENSE",
+      "__license": "https://github.com/MercuryWorkshop/chromeos-releases-data/blob/main/LICENSE",
       "__license_info": "JSON data is licensed under the Creative Commons Attribution license. If you use this for your own projects, you must include attribution and link to the repository."
     })
     images.sort(key=lambda x: x["last_modified"])

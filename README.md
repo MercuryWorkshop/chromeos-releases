@@ -33,7 +33,7 @@ Generated data will be located at `data/data.json`.
 
 ```
 MercuryWorkshop/chromeos-releases: Database for Chrome OS release info and download URLs
-Copyright (C) 2025 ading2210
+Copyright (C) 2025 (((ading2210)))
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

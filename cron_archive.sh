@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#this script triggers internet archive snapshots for the following urls
+# This script triggers Internet Archive snapshots for the following URLs
 
 urls=(
   "https://chromiumdash.appspot.com/cros/fetch_serving_builds?deviceCategory=ChromeOS"

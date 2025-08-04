@@ -26,15 +26,6 @@ def merge_data(*data_sources):
   
   for board, images_set in merged_sets.items():
     images = [dict(image) for image in images_set]
-    images.append({
-      "platform_version": "0.0.0",
-      "chrome_version": "Credit: github.com/MercuryWorkshop/chromeos-releases-data",
-      "channel": "stable-channel",
-      "last_modified": 0,
-      "url": "https://github.com/MercuryWorkshop/chromeos-releases-data",
-      "__license": "https://github.com/MercuryWorkshop/chromeos-releases-data/blob/main/LICENSE",
-      "__license_info": "JSON data is licensed under the Creative Commons Attribution license. If you use this for your own projects, you must include attribution and link to the repository."
-    })
     images.sort(key=lambda x: x["last_modified"])
     merged[board] = {
       "images": images,

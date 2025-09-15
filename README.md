@@ -9,7 +9,7 @@ This repo contains scripts for building a database of all Chrome OS recovery ima
 However, Google only makes the newest recovery images available, making it difficult to find older builds. To obtain a list of older recovery images as well as download links, we get this data from two sources:
 
 - Historical data for recovery images is fetched from the [chrome-versions](https://www.npmjs.com/package/chrome-versions) NPM package. This old database used a convoluted method of brute forcing download URLs and is no longer kept up to date. 
-- Newer data comes from parsing Internet Archive snapshots of the Chromium Serving Builds API. Snapshots are taken daily, so includes the data for every single recovery image since 2024. 
+- Newer data comes from parsing Internet Archive snapshots of the Chromium Serving Builds API. Snapshots are taken daily, so it includes the data for every single recovery image since 2024. 
 
 ## Building the Database
 

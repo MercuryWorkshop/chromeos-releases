@@ -28,6 +28,7 @@ def fetch_blog_page(url):
 
   print(f"GET {url}")
   response = common.session.get(url)
+  response.raise_for_status()
   document = lxml.html.fromstring(response.text)
 
   post_divs = document.cssselect(".post")

@@ -11,6 +11,18 @@ jobs:
     steps:
       - name: download repo
         uses: actions/checkout@v4
+      
+      - name: setup proxy
+        run: |
+          cd /tmp
+          wget -q "https://github.com/ViRb3/wgcf/releases/download/v2.2.29/wgcf_2.2.29_linux_amd64" -O wgcf
+          chmod +x wgcf
+          ./wgcf register --accept-tos
+          ./wgcf generate
+          echo "[Socks5]" >> "wgcf-profile.conf"
+          echo "BindAddress = 127.0.0.1:40000" >> "wgcf-profile.conf"
+          wget -q "https://github.com/whyvl/wireproxy/releases/download/v1.0.9/wireproxy_linux_amd64.tar.gz" -O wireproxy_linux_amd64.tar.gz
+          tar -xf wireproxy_linux_amd64.tar.gz
 
       - name: restore downloads cache
         uses: actions/cache/restore@v4
@@ -23,6 +35,9 @@ jobs:
           python3 -m venv .venv
           source .venv/bin/activate
           pip3 install -r requirements.txt
+          (cd /tmp; nohup ./wireproxy -c wgcf-profile.conf &)
+          export HTTPS_PROXY="socks5h://127.0.0.1:40000"
+          export HTTP_PROXY="socks5h://127.0.0.1:40000"
           python3 main.py
 
       - name: upload database as an artifact

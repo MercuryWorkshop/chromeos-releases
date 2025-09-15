@@ -11,6 +11,12 @@ jobs:
     steps:
       - name: download repo
         uses: actions/checkout@v4
+
+      - name: restore downloads cache
+        uses: actions/cache/restore@v4
+        with:
+          path: downloads
+          key: downloads-${{ github.ref }}
       
       - name: run build
         run: |
@@ -33,6 +39,12 @@ jobs:
           path: downloads/
           compression-level: 9
       
+      - name: save downloads cache
+        uses: actions/cache/save@v4
+        with:
+          path: downloads
+          key: downloads-${{ github.ref }}
+
       - name: publish database
         run: |
           git config --global user.name "GitHub Actions"

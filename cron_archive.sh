@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 #this script triggers internet archive snapshots for the following urls
 
 urls=(

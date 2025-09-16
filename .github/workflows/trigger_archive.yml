@@ -15,3 +15,11 @@ jobs:
       - name: trigger archives
         run: |
           env TOKEN="${{ secrets.IA_API_KEY }}" ./cron_archive.sh
+
+  workflow-keepalive:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - uses: liskin/gh-workflow-keepalive@v1

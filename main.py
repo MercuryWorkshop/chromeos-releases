@@ -6,9 +6,9 @@ import common
 import googleblog
 import chrome100
 import wayback
+import git
 
-base_path = pathlib.Path(__file__).resolve().parent
-data_path = base_path / "data"
+data_path = common.base_path / "data"
 out_file_path = data_path / "data.json"
 
 class HashableImageDict(dict):
@@ -49,9 +49,10 @@ if __name__ == "__main__":
   googleblog.fetch_all_versions()
   chrome100_data = chrome100.get_chrome100_data()
   wayback_data = wayback.get_wayback_data()
+  git_data = git.get_git_data()
 
   print("Merging data sources")
-  merged_data = merge_data(chrome100_data, *wayback_data)
+  merged_data = merge_data(chrome100_data, *wayback_data, *git_data)
 
   print("Done!")
   data_path.mkdir(exist_ok=True)

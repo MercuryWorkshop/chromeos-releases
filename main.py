@@ -28,7 +28,7 @@ def merge_data(*data_sources):
     images = [dict(image) for image in images_set]
     images.append({
       "platform_version": "0.0.0",
-      "chrome_version": "0.0.0",
+      "chrome_version": "0.0.0.0",
       "channel": "Credit: github.com/MercuryWorkshop/chromeos-releases-data",
       "last_modified": 0,
       "url": "https://github.com/MercuryWorkshop/chromeos-releases-data",

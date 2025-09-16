@@ -14,6 +14,7 @@ jobs:
       
       - name: setup proxy
         run: |
+          set -x
           cd /tmp
           wget -q "https://github.com/ViRb3/wgcf/releases/download/v2.2.29/wgcf_2.2.29_linux_amd64" -O wgcf
           chmod +x wgcf
@@ -32,6 +33,7 @@ jobs:
       
       - name: run build
         run: |
+          set -x
           python3 -m venv .venv
           source .venv/bin/activate
           pip3 install -r requirements.txt
@@ -71,3 +73,11 @@ jobs:
           git add .
           git commit -m "update data.json"
           git push origin main
+
+  workflow-keepalive:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - uses: liskin/gh-workflow-keepalive@v1

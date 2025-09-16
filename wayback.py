@@ -10,8 +10,7 @@ import common
 
 #this module fetches all recovery image data from web.archive.org
 
-base_path = pathlib.Path(__file__).resolve().parent
-downloads_path = base_path / "downloads" / "wayback"
+downloads_path = common.base_path / "downloads" / "wayback"
 
 recovery_json_files = [
   "recovery.json", "recovery2.json", "onhub_recovery.json", "workspaceHardware_recovery2.json", 

@@ -4,8 +4,6 @@ import json
 from collections import defaultdict
 from datetime import datetime
 
-import requests
-
 import common
 
 #this module fetches historical data from the chrome100.dev database which is no longer updated
@@ -20,7 +18,7 @@ def fetch_chrome100_db():
   if chrome100_db_path.exists():
     return
   print(f"GET {chrome100_db_url}")
-  db_response = requests.get(chrome100_db_url)
+  db_response = common.session.get(chrome100_db_url)
   chrome100_db_path.write_bytes(db_response.content)
 
 def read_chrome100_db():

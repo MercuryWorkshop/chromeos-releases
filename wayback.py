@@ -5,7 +5,6 @@ import re
 from collections import defaultdict
 from datetime import datetime
 
-import requests
 import common
 
 #this module fetches all recovery image data from web.archive.org
@@ -163,7 +162,7 @@ def fetch_modified_dates(data):
       else:
         print(f"HEAD ({i}) {dl_url}")
         i += 1
-        dl_response = requests.head(dl_url)
+        dl_response = common.session.head(dl_url)
         timestamp_raw = dl_response.headers["Last-Modified"]
         
         timestamp_pattern = "%a, %d %b %Y %H:%M:%S %Z"

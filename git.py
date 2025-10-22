@@ -2,7 +2,7 @@ import json
 
 import common
 
-#this module fetches past recovery image data from the chromeos-releases-data repo
+#this module fetches past recovery image data from the MercuryWorkshop/chromeos-releases-data repo
 
 commits_api_url = "https://api.github.com/repos/MercuryWorkshop/chromeos-releases-data/commits?path=data.json"
 file_url_template = "https://raw.githubusercontent.com/MercuryWorkshop/chromeos-releases-data/{commit}/data.json"

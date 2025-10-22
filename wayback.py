@@ -6,6 +6,7 @@ from collections import defaultdict
 from datetime import datetime
 
 import common
+import versions
 
 #this module fetches all recovery image data from web.archive.org
 
@@ -23,7 +24,6 @@ cdx_api_url_template = "http://web.archive.org/cdx/search/cdx?output=json&url={u
 
 dl_url_regex = r"https://dl\.google\.com/dl/edgedl/chromeos/recovery/chromeos_([\d\.]+?)_(.+?)_recovery_(.+?)_.+?\.bin\.zip"
 dl_dates_path = downloads_path / "dates.json"
-
 
 def parse_wayback_cdx(cdx_data):
   timestamps = []
@@ -99,12 +99,14 @@ def parse_dash_snapshots(snapshots):
     matches = re.findall(dl_url_regex, dl_url)[0]
     platform_version, board, channel = matches
 
-    if not platform_version in common.versions:
+    chrome_version = versions.get_chrome_version(platform_version)
+    if not chrome_version:
+      print(f"Warning: could not find chrome version for {dl_url}")
       continue
 
     image = {
       "platform_version": platform_version,
-      "chrome_version": common.versions[platform_version],
+      "chrome_version": chrome_version,
       "channel": channel,
       "last_modified": None,
       "url": dl_url
@@ -126,9 +128,9 @@ def prase_recovery_data(snapshots):
       if "chrome_version" in item:
         chrome_version = item["chrome_version"]
       else:
-        if platform_version in common.versions:
-          chrome_version = common.versions[platform_version]
-        else:
+        chrome_version = versions.get_chrome_version(platform_version)
+        if not chrome_version:
+          print(f"Warning: could not find chrome version for {item['url']}")
           continue
 
       image = {

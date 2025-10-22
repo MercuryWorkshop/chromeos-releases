@@ -37,10 +37,17 @@ def merge_data(*data_sources):
       "__license_info": "JSON data is licensed under the Creative Commons Attribution license. If you use this for your own projects, you must include attribution and link to the repository."
     })
     images.sort(key=lambda x: x["last_modified"])
+
+    brand_names = sorted(list(common.device_names[board]))
+    hwid_matches = sorted(list(common.hwid_matches[board]))
+
+    if len(brand_names) == 0 and board in common.brand_name_overrides:
+      brand_names = common.brand_name_overrides[board]
+
     merged[board] = {
       "images": images,
-      "brand_names": sorted(list(common.device_names[board])),
-      "hwid_matches": sorted(list(common.hwid_matches[board]))
+      "brand_names": brand_names,
+      "hwid_matches": hwid_matches
     }
   
   return dict(sorted(merged.items()))

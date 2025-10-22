@@ -17,3 +17,11 @@ versions = {}
 dates = {}
 hwid_matches = defaultdict(set)
 device_names = defaultdict(set)
+
+#copied from https://www.chromium.org/chromium-os/developer-library/reference/development/developer-information-for-chrome-os-devices/
+brand_name_overrides = {
+  "whirlwind": ["OnHub Router TGR1900"],
+  "arkham": ["OnHub SRT-AC1900"],
+  "gale": ["Google WiFi"],
+  "mistral": ["Nest Wifi router"]
+}

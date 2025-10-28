@@ -28,8 +28,13 @@ dl_dates_path = downloads_path / "dates.json"
 def parse_wayback_cdx(cdx_data):
   timestamps = []
   timestamp_index = cdx_data[0].index("timestamp")
+  digest_index = cdx_data[0].index("digest")
+  last_digest = None
   for row in cdx_data[1:]:
+    if row[digest_index] == last_digest:
+      continue
     timestamps.append(row[timestamp_index])
+    last_digest = row[digest_index]
   return timestamps
 
 def fetch_wayback_cdx(cdx_api_url, path):

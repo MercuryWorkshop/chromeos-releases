@@ -25,11 +25,13 @@ jobs:
           wget -q "https://github.com/whyvl/wireproxy/releases/download/v1.0.9/wireproxy_linux_amd64.tar.gz" -O wireproxy_linux_amd64.tar.gz
           tar -xf wireproxy_linux_amd64.tar.gz
 
-      - name: restore downloads cache
-        uses: actions/cache/restore@v4
+      - name: cache downloads
+        uses: actions/cache@v4
         with:
           path: downloads
-          key: downloads-${{ github.ref }}
+          key: downloads-${{ github.ref }}-${{ github.run_id }}
+          restore-keys: |
+            downloads-${{ github.ref }}
       
       - name: run build
         run: |
@@ -55,21 +57,19 @@ jobs:
           name: downloads
           path: downloads/
           compression-level: 9
-      
-      - name: save downloads cache
-        uses: actions/cache/save@v4
-        with:
-          path: downloads
-          key: downloads-${{ github.ref }}
 
       - name: publish database
         run: |
+          set -x
           git config --global user.name "GitHub Actions"
           git config --global user.email "<>"
           cd data
           git clone "https://${{ secrets.GH_TOKEN }}@github.com/MercuryWorkshop/chromeos-releases-data" -b main
           cd chromeos-releases-data
           cp ../data.json ./
+          if [ ! "$(git status -s)" ]; then
+            exit 0
+          fi
           git add .
           git commit -m "update data.json"
           git push origin main

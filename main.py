@@ -36,7 +36,7 @@ def merge_data(*data_sources):
       "__license": "https://github.com/MercuryWorkshop/chromeos-releases-data/blob/main/LICENSE",
       "__license_info": "JSON data is licensed under the Creative Commons Attribution license. If you use this for your own projects, you must include attribution and link to the repository."
     })
-    images.sort(key=lambda x: x["last_modified"])
+    images.sort(key=lambda x: (x["last_modified"], x["platform_version"]))
 
     brand_names = sorted(list(common.device_names[board]))
     hwid_matches = sorted(list(common.hwid_matches[board]))

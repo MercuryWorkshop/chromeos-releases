@@ -20,7 +20,7 @@ device_categories = ["Chrome OS", "ChromeOS", "Chrome OS Flex", "ChromeOS Flex",
 
 chrome_dash_url_template = "https://chromiumdash.appspot.com/cros/fetch_serving_builds?deviceCategory={category}"
 recovery_json_url_template = "https://dl.google.com/dl/edgedl/chromeos/recovery/{filename}"
-cdx_api_url_template = "http://web.archive.org/cdx/search/cdx?output=json&url={url}"
+cdx_api_url_template = "https://web.archive.org/cdx/search/cdx?output=json&url={url}"
 
 dl_url_regex = r"https://dl\.google\.com/dl/edgedl/chromeos/recovery/chromeos_([\d\.]+?)_(.+?)_recovery_(.+?)_.+?\.bin\.zip"
 dl_dates_path = downloads_path / "dates.json"

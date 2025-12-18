@@ -22,7 +22,6 @@ def get_kernel_version(image):
 def get_kernel_versions(data):
   global kernel_versions
   queued_images = []
-  print(dl_kernver_path)
   if dl_kernver_path.exists():
     kernel_versions = json.loads(dl_kernver_path.read_text())
 

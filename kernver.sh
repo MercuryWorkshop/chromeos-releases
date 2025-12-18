@@ -10,12 +10,34 @@ clean_up () {
   exit "$status"
 } 
 
+check_file_type() {
+  local img_url="$1"
+  local filename="$(basename "$img_url")"
+  curl -s --header "Range: bytes=0-$((512*1024))" "$img_url" \
+    | file - -b --mime-type
+}
+
 download_partial() {
   local img_url="$1"
   local out_file="$2"
-  curl -s --header "Range: bytes=0-$((100*1024*1024))" "$img_url" \
-    | busybox unzip - -p 2>/dev/null \
-    | dd of="$out_file" bs=1M conv=notrunc status=none
+  local mime_type="$(check_file_type "$img_url")"
+
+  if [ "$mime_type" = "application/zip" ]; then
+    curl -s --header "Range: bytes=0-$((100*1024*1024))" "$img_url" \
+      | busybox unzip - -p 2>/dev/null \
+      | dd of="$out_file" bs=1M conv=notrunc status=none
+
+  #sometimes the zip file is inside a gzip file for some reason
+  elif [ "$mime_type" = "application/gzip" ]; then
+    curl -s --header "Range: bytes=0-$((100*1024*1024))" "$img_url" \
+      | gzip -d 2>/dev/null \
+      | busybox unzip - -p 2>/dev/null \
+      | dd of="$out_file" bs=1M conv=notrunc status=none
+
+  else
+    echo "error: invalid mime type of $mime_type" 1>&2
+    exit 1
+  fi
 }
 
 get_kernver() {

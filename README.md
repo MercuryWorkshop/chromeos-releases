@@ -13,12 +13,19 @@ However, Google only makes the newest recovery images available, making it diffi
 
 ## Building the Database
 
-Clone this repository, create a Python venv, and install dependencies:
+You need to run this on a Linux system, due to a dependency on `vboot-kernel-utils`. 
+
+To start, clone this repository, create a Python venv, and install dependencies:
 
 ```
 python3 -m venv .venv
 source .venv/bin/activate
 pip3 install -r requirements.txt
+```
+
+Install `vboot-kernel-utils` (needed for the `futility` command):
+```
+sudo apt install vboot-kernel-utils
 ```
 
 Run the script:

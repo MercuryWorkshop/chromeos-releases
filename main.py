@@ -8,6 +8,7 @@ import googleblog
 import chrome100
 import wayback
 import git
+import kernver
 
 data_path = common.base_path / "data"
 out_file_path = data_path / "data.json"
@@ -30,6 +31,7 @@ def merge_data(*data_sources):
     images.append({
       "platform_version": "0.0.0",
       "chrome_version": "0.0.0.0",
+      "kernel_version": None,
       "channel": "Credit: github.com/MercuryWorkshop/chromeos-releases-data",
       "last_modified": 0,
       "url": "https://github.com/MercuryWorkshop/chromeos-releases-data",
@@ -62,6 +64,9 @@ if __name__ == "__main__":
 
   print("Merging data sources")
   merged_data = merge_data(chrome100_data, *wayback_data, *git_data)
+
+  print("Fetching kernel versions from image data")
+  merged_data = kernver.get_kernel_versions(merged_data)
 
   print("Done!")
   data_path.mkdir(exist_ok=True)

@@ -9,6 +9,17 @@ jobs:
       
     name: Build Chrome OS releases database
     steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 32768
+          swap-size-mb: 64
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-docker-images: 'true'
+
       - name: download repo
         uses: actions/checkout@v4
       
@@ -20,12 +31,18 @@ jobs:
           restore-keys: |
             downloads-${{ github.ref }}
       
-      - name: run build
+      - name: install deps
         run: |
           set -x
+          sudo apt-get install -y vboot-kernel-utils
           python3 -m venv .venv
           source .venv/bin/activate
           pip3 install -r requirements.txt
+      
+      - name: run build
+        run: |
+          set -x
+          source .venv/bin/activate
           python3 main.py
 
       - name: upload database as an artifact

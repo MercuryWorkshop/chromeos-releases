@@ -10,14 +10,6 @@ clean_up () {
   exit "$status"
 } 
 
-get_img_size() {
-  local img_url="$1"
-  curl -s --header "Range: bytes=0-$((1*1024*1024))" "$img_url" \
-    | busybox unzip - -lq 2>/dev/null \
-    | tail -n1 \
-    | cut -d' ' -f1
-}
-
 download_partial() {
   local img_url="$1"
   local out_file="$2"
@@ -31,8 +23,7 @@ get_kernver() {
   local img_bin="$temp_dir/image.bin"
   local kernel_bin="$temp_dir/kernel.bin"
 
-  local img_size="$(get_img_size "$img_url")"
-  truncate "$img_bin" -s "$(($img_size*11/10))"
+  truncate "$img_bin" -s "10G"
   download_partial "$img_url" "$img_bin"
 
   local fdisk_out="$(fdisk -l "$img_bin" 2>/dev/null | grep "${img_bin}4")"

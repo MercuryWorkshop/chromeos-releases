@@ -43,6 +43,29 @@ grep_regex() {
   fi
 }
 
+grep_regex_strict() {
+  grep_regex "$@" | tail -n1 | (! grep '')
+}
+
+get_linux_version() {
+  local kernel_bin="$1"
+  strings "$kernel_bin" \
+    | grep_regex_strict -o1 -o2 "$linux_version_regex" || return 0
+  
+  local binwalk_out="$(cd "$temp_dir"; binwalk --extract "$kernel_bin")"
+  strings "$temp_dir"/*.extracted/* \
+    | grep_regex_strict -o1 -o2 "$linux_version_regex" || return 0
+  
+  local lz4_offset="$(echo "$binwalk_out" | grep_regex -o1 "(\d+).+?LZ4 compressed data" | head -n1)"
+  dd if="$kernel_bin" iflag=skip_bytes,count_bytes skip="$lz4_offset" status=none \
+    | lz4 -d \
+    | strings \
+    | grep_regex_strict -o1 -o2 "$linux_version_regex" || return 0
+  
+  echo "error: could not find linux kernel version" 1>&2
+  return 1
+}
+
 get_kernver() {
   local img_url="$1"
   local img_bin="$temp_dir/image.bin"
@@ -57,25 +80,15 @@ get_kernver() {
   local sectors="$(echo "$fdisk_out" | awk '{print $4}')"
 
   stream_zip "$img_url" \
-    | dd of="$kernel_bin" iflag=fullblock bs=512 skip="$start" count="$sectors" status=none
+    | dd of="$kernel_bin" iflag=fullblock,skip_bytes,count_bytes \
+        oflag=count_bytes bs=1M skip="$((start*512))" \
+        count="$((sectors*512))" status=none
 
   #tpm_kernver
   futility show "$kernel_bin" | grep "Kernel version:" | awk '{print $3}'
+  #linux kernel version number
+  get_linux_version "$kernel_bin"
 
-  #linux kernel version number (binwalk might be needed)
-  local linux_version="$(strings "$kernel_bin" | grep_regex -o1 -o2 "$linux_version_regex" | tail -n1)"
-  if [ ! "$linux_version" ]; then
-    (cd "$temp_dir"; binwalk --extract "$kernel_bin" >/dev/null)
-    linux_version="$(strings "$temp_dir"/*.extracted/* | grep_regex -o1 -o2 "$linux_version_regex" | tail -n1)"
-    rm -rf "$temp_dir"/*.extracted/*
-  fi
-
-  if [ ! "$linux_version" ]; then
-    echo "error: could not find linux kernel version" 1>&2
-    exit 1
-  fi
-
-  echo "$linux_version"
   rm -f "$img_bin" "$kernel_bin"
 }
 

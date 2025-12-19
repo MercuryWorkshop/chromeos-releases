@@ -13,7 +13,7 @@ However, Google only makes the newest recovery images available, making it diffi
 
 ## Building the Database
 
-You need to run this on a Linux system, due to a dependency on `vboot-kernel-utils`. 
+You need to run this on a Linux system, due to dependencies on `vboot-kernel-utils` and `binwalk`. 
 
 To start, clone this repository, create a Python venv, and install dependencies:
 
@@ -23,9 +23,9 @@ source .venv/bin/activate
 pip3 install -r requirements.txt
 ```
 
-Install `vboot-kernel-utils` (needed for the `futility` command):
+Install `vboot-kernel-utils` (needed for the `futility` command) `pcregrep`, and `binwalk`:
 ```
-sudo apt install vboot-kernel-utils
+sudo apt install vboot-kernel-utils binwalk pcregrep
 ```
 
 Run the script:
@@ -34,7 +34,7 @@ Run the script:
 python3 main.py
 ```
 
-Generated data will be located at `data/data.json`. 
+Generated data will be located at `data/data.json`. Note that the script will download several TB of data on the first run to determine the kernel version for recovery images. 
 
 ## Copyright
 

@@ -3,6 +3,7 @@
 set -e
 
 temp_dir="$(mktemp -d)"
+linux_version_regex='(\d+\.\d+\.\d+-\d+-[0-9a-g]+)|Linux version (\d+\.\d+\.\d+-?\d*-?[0-9a-g]*)'
 
 clean_up () {
   local status="$?"
@@ -17,26 +18,28 @@ check_file_type() {
     | file - -b --mime-type
 }
 
-download_partial() {
+stream_zip() {
   local img_url="$1"
-  local out_file="$2"
   local mime_type="$(check_file_type "$img_url")"
 
   if [ "$mime_type" = "application/zip" ]; then
-    curl -s --header "Range: bytes=0-$((100*1024*1024))" "$img_url" \
-      | busybox unzip - -p 2>/dev/null \
-      | dd of="$out_file" bs=1M conv=notrunc status=none
+    curl -s "$img_url" | busybox unzip - -p 2>/dev/null 
 
   #sometimes the zip file is inside a gzip file for some reason
   elif [ "$mime_type" = "application/gzip" ]; then
-    curl -s --header "Range: bytes=0-$((100*1024*1024))" "$img_url" \
-      | gzip -d 2>/dev/null \
-      | busybox unzip - -p 2>/dev/null \
-      | dd of="$out_file" bs=1M conv=notrunc status=none
+    curl -s "$img_url" | gzip -d 2>/dev/null | busybox unzip - -p 2>/dev/null 
 
   else
     echo "error: invalid mime type of $mime_type" 1>&2
     exit 1
+  fi
+}
+
+grep_regex() {
+  if [ "$(command -v pcregrep)" ]; then
+    pcregrep "$@"
+  else
+    pcre2grep "$@"
   fi
 }
 
@@ -46,14 +49,33 @@ get_kernver() {
   local kernel_bin="$temp_dir/kernel.bin"
 
   truncate "$img_bin" -s "10G"
-  download_partial "$img_url" "$img_bin"
+  stream_zip "$img_url" \
+    | dd of="$img_bin" iflag=fullblock bs=1M count=1 conv=notrunc status=none
 
   local fdisk_out="$(fdisk -l "$img_bin" 2>/dev/null | grep "${img_bin}4")"
   local start="$(echo "$fdisk_out" | awk '{print $2}')"
   local sectors="$(echo "$fdisk_out" | awk '{print $4}')"
-  dd if="$img_bin" of="$kernel_bin" bs=512 skip="$start" count="$sectors" status=none
 
+  stream_zip "$img_url" \
+    | dd of="$kernel_bin" iflag=fullblock bs=512 skip="$start" count="$sectors" status=none
+
+  #tpm_kernver
   futility show "$kernel_bin" | grep "Kernel version:" | awk '{print $3}'
+
+  #linux kernel version number (binwalk might be needed)
+  local linux_version="$(strings "$kernel_bin" | grep_regex -o1 -o2 "$linux_version_regex" | tail -n1)"
+  if [ ! "$linux_version" ]; then
+    (cd "$temp_dir"; binwalk --extract "$kernel_bin" >/dev/null)
+    linux_version="$(strings "$temp_dir"/*.extracted/* | grep_regex -o1 -o2 "$linux_version_regex" | tail -n1)"
+    rm -rf "$temp_dir"/*.extracted/*
+  fi
+
+  if [ ! "$linux_version" ]; then
+    echo "error: could not find linux kernel version" 1>&2
+    exit 1
+  fi
+
+  echo "$linux_version"
   rm -f "$img_bin" "$kernel_bin"
 }
 

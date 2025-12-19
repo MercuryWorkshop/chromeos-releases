@@ -34,7 +34,7 @@ jobs:
       - name: install deps
         run: |
           set -x
-          sudo apt-get install -y vboot-kernel-utils
+          sudo apt-get install -y vboot-kernel-utils binwalk pcregrep
           python3 -m venv .venv
           source .venv/bin/activate
           pip3 install -r requirements.txt

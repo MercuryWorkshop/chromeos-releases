@@ -2,6 +2,9 @@
 
 set -e
 
+#needed for fdisk
+export PATH="/sbin:$PATH"
+
 temp_dir="$(mktemp -d)"
 linux_version_regex='(\d+\.\d+\.\d+-\d+-[0-9a-g]+)|Linux version (\d+\.\d+\.\d+-?\d*-?[0-9a-g]*)'
 
@@ -78,6 +81,11 @@ get_kernver() {
   local fdisk_out="$(fdisk -l "$img_bin" 2>/dev/null | grep "${img_bin}4")"
   local start="$(echo "$fdisk_out" | awk '{print $2}')"
   local sectors="$(echo "$fdisk_out" | awk '{print $4}')"
+
+  if [ ! "$start" ] || [ ! "$sectors" ]; then
+    echo "error: could not find the image partition layout" 1>&2
+    return 1
+  fi
 
   stream_zip "$img_url" \
     | dd of="$kernel_bin" iflag=fullblock,skip_bytes,count_bytes \

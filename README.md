@@ -23,9 +23,9 @@ source .venv/bin/activate
 pip3 install -r requirements.txt
 ```
 
-Install `vboot-kernel-utils` (needed for the `futility` command) `pcregrep`, and `binwalk`:
+Install `vboot-kernel-utils` (needed for the `futility` command) `busybox`, `pcregrep`, and `binwalk`:
 ```
-sudo apt install vboot-kernel-utils binwalk pcregrep
+sudo apt install vboot-kernel-utils busybox binwalk pcregrep
 ```
 
 Run the script:

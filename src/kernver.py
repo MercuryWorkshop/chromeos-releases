@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import common
 
-script_path = common.base_path / "kernver.sh"
+script_path = common.scripts_path / "kernver.sh"
 downloads_path = common.base_path / "downloads" / "kernver"
 dl_kernver_path = downloads_path / "kernver.json"
 

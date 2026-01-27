@@ -34,7 +34,7 @@ stream_zip() {
 
   else
     echo "error: invalid mime type of $mime_type" 1>&2
-    exit 1
+    return 1
   fi
 }
 

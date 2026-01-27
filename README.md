@@ -31,7 +31,7 @@ sudo apt install vboot-kernel-utils busybox binwalk pcregrep
 Run the script:
 
 ```
-python3 main.py
+python3 src/main.py
 ```
 
 Generated data will be located at `data/data.json`. Note that the script will download several TB of data on the first run to determine the kernel version for recovery images. 

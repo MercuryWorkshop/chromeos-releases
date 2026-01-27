@@ -4,7 +4,9 @@ from collections import defaultdict
 import httpx
 from httpx_retries import Retry, RetryTransport
 
-base_path = pathlib.Path(__file__).resolve().parent
+src_path = pathlib.Path(__file__).resolve().parent
+scripts_path = src_path / "scripts"
+base_path = src_path.parent
 
 retry = Retry(total=10, backoff_factor=0.5)
 transport = RetryTransport(retry=retry)

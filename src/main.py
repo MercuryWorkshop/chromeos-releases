@@ -11,8 +11,7 @@ import wayback
 import git
 import kernver
 
-data_path = common.base_path / "data"
-out_file_path = data_path / "data.json"
+out_file_path = common.data_path / "data.json"
 
 class HashableImageDict(dict):
   def __hash__(self):
@@ -70,5 +69,5 @@ if __name__ == "__main__":
     merged_data = kernver.get_kernel_versions(merged_data)
 
   print("Done!")
-  data_path.mkdir(exist_ok=True)
+  common.data_path.mkdir(exist_ok=True)
   out_file_path.write_text(json.dumps(merged_data, indent=2))

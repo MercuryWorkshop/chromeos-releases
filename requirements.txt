@@ -3,3 +3,4 @@ httpx[socks]
 httpx-retries
 lxml
 cssselect
+dulwich

@@ -178,7 +178,8 @@ def fetch_modified_dates(data):
         dates[dl_url] = last_modified
       
       image["last_modified"] = last_modified
-    
+  
+  dates = dict(sorted(dates.items(), key=lambda x: x[1]))
   dl_dates_path.write_text(json.dumps(dates, indent=2))
   common.dates.update(dates)
 

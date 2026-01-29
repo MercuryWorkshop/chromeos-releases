@@ -5,7 +5,6 @@ from collections import defaultdict
 
 import common
 import versions
-import googleblog
 import chrome100
 import wayback
 import git
@@ -56,7 +55,6 @@ def merge_data(*data_sources):
 if __name__ == "__main__":
   print("Loading data sources")
   versions.fetch_all_versions()
-  googleblog.fetch_all_versions()
   chrome100_data = chrome100.get_chrome100_data()
   wayback_data = wayback.get_wayback_data()
   git_data = git.get_git_data()

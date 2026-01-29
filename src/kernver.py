@@ -1,6 +1,7 @@
 import subprocess
 import os
 import json
+import re
 from concurrent.futures import ThreadPoolExecutor
 
 import common
@@ -12,6 +13,12 @@ dl_kernver_path = downloads_path / "kernver.json"
 os.environ["TMPDIR"] = str(downloads_path)
 kernel_versions = {}
 
+def sort_kernel_versions():
+  def version_from_url(item):
+    match = re.findall(r'\d+\.\d+\.\d+', item[0])[0]
+    return tuple(int(s) for s in match.split(".")), item[0], item[1]
+  return dict(sorted(kernel_versions.copy().items(), key=version_from_url))
+
 def get_kernel_version(image):
   print(f"GET {image['url']}")
   output = subprocess.check_output([script_path, image["url"]]).decode().strip()
@@ -19,7 +26,7 @@ def get_kernel_version(image):
   image["kernel_version"] = int(kernver)
   image["linux_version"] = linux_version
   kernel_versions[image["url"]] = [int(kernver), linux_version]
-  dl_kernver_path.write_text(json.dumps(kernel_versions.copy(), indent=2))
+  dl_kernver_path.write_text(json.dumps(sort_kernel_versions(), indent=2))
  
 def get_kernel_versions(data):
   global kernel_versions

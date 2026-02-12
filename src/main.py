@@ -50,7 +50,7 @@ def merge_data(*data_sources):
 
 if __name__ == "__main__":
   print("Loading data sources")
-  versions.fetch_all_versions()
+  versions.read_all_versions()
   chrome100_data = chrome100.get_chrome100_data()
   wayback_data = wayback.get_wayback_data()
   git_data = git.get_git_data()

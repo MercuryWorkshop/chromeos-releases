@@ -2,21 +2,29 @@ import zipfile
 import io
 import csv
 import functools
+import time
 
 import common
 
 #this module fetches chrome os version numbers from the MercuryWorkshop/chromeos-versions repo
 
+downloads_path = common.base_path / "downloads" / "versions"
+
+versions_path = downloads_path / "versions.zip"
 versions_url = "https://nightly.link/MercuryWorkshop/chromeos-versions/workflows/build/main/data.zip"
 
 def fetch_all_versions():
+  if versions_path.exists() and time.time() - versions_path.stat().st_mtime < 3600:
+    return
   print(f"GET {versions_url}")
   response = common.session.get(versions_url, follow_redirects=True)
-  zip_buffer = io.BytesIO(response.content)
+  downloads_path.mkdir(parents=True, exist_ok=True)
+  versions_path.write_bytes(response.content)
 
-  with zipfile.ZipFile(zip_buffer, "r") as z:
+def read_all_versions():
+  fetch_all_versions()
+  with zipfile.ZipFile(versions_path, "r") as z:
     csv_text = z.read("data.csv").decode().strip()
-  
   reader = csv.reader(csv_text.split("\n"))
   for platform_version, chrome_version in reader:
     common.versions[platform_version] = chrome_version

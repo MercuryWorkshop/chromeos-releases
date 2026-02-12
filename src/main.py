@@ -12,17 +12,13 @@ import kernver
 
 out_file_path = common.data_path / "data.json"
 
-class HashableImageDict(dict):
-  def __hash__(self):
-    return hash(self["url"])
-
 def merge_data(*data_sources):
   merged_sets = defaultdict(set)
   merged = {}
 
   for data in data_sources:
     for board, images in data.items():
-      items = set(HashableImageDict(image) for image in images)
+      items = set(common.HashableImageDict(image) for image in images)
       merged_sets[board] |= items
   
   for board, images_set in merged_sets.items():

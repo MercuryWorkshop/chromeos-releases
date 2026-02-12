@@ -3,12 +3,14 @@ import json
 import time
 import re
 from collections import defaultdict
-from datetime import datetime
+from datetime import timezone, datetime
 
 import common
 import versions
 
 #this module fetches all recovery image data from web.archive.org
+
+#todo: remove this module once everything is migrated to git
 
 downloads_path = common.base_path / "downloads" / "wayback"
 
@@ -173,8 +175,8 @@ def fetch_modified_dates(data):
         timestamp_raw = dl_response.headers["Last-Modified"]
         
         timestamp_pattern = "%a, %d %b %Y %H:%M:%S %Z"
-        last_modified_dt = datetime.strptime(timestamp_raw, timestamp_pattern)
-        last_modified = int((last_modified_dt - datetime(1970, 1, 1)).total_seconds())
+        last_modified_dt = datetime.strptime(timestamp_raw, timestamp_pattern).replace(tzinfo=timezone.utc)
+        last_modified = int(last_modified_dt.timestamp())
         dates[dl_url] = last_modified
       
       image["last_modified"] = last_modified

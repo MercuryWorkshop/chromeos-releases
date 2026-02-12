@@ -28,3 +28,16 @@ brand_name_overrides = {
   "gale": ["Google WiFi"],
   "mistral": ["Nest Wifi router"]
 }
+
+recovery_url_template = "https://dl.google.com/dl/edgedl/chromeos/recovery/{filename}"
+recovery_filenames = [
+  "recovery.json", "recovery2.json", "onhub_recovery.json", "workspaceHardware_recovery2.json", 
+  "cloudready_recovery.json", "cloudready_recovery2.json"
+]
+
+dash_url_template = "https://chromiumdash.appspot.com/cros/fetch_serving_builds?deviceCategory={category}"
+dash_categories = ["Chrome OS", "ChromeOS", "Chrome OS Flex", "ChromeOS Flex", "Google Meet Hardware"]
+
+class HashableImageDict(dict):
+  def __hash__(self):
+    return hash(self["url"])

@@ -7,9 +7,9 @@ from datetime import timezone, datetime
 from dulwich.object_store import tree_lookup_path
 from dulwich import porcelain
 
-import versions
-import wayback
-import common
+from cros_releases import versions
+from cros_releases import wayback
+from cros_releases import common
 
 repo_path = common.data_path / "repo"
 sources_path = repo_path / "sources"

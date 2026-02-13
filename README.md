@@ -20,7 +20,7 @@ To start, clone this repository, create a Python venv, and install dependencies:
 ```
 python3 -m venv .venv
 source .venv/bin/activate
-pip3 install -r requirements.txt
+pip3 install -e .
 ```
 
 Install `vboot-kernel-utils` (needed for the `futility` command) `busybox`, `pcregrep`, and `binwalk`:
@@ -31,7 +31,7 @@ sudo apt install vboot-kernel-utils busybox binwalk pcregrep
 Run the script:
 
 ```
-python3 src/main.py
+python3 -m cros_releases
 ```
 
 Generated data will be located at `data/data.json`. Note that the script will download several TB of data on the first run to determine the kernel version for recovery images. 

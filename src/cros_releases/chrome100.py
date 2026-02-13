@@ -4,7 +4,7 @@ import json
 from collections import defaultdict
 from datetime import datetime
 
-import common
+from cros_releases import common
 
 #this module fetches historical data from the chrome100.dev database which is no longer updated
 

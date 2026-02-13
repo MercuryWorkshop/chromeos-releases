@@ -3,12 +3,12 @@ import json
 import os
 from collections import defaultdict
 
-import common
-import versions
-import chrome100
-import wayback
-import git
-import kernver
+from cros_releases import common
+from cros_releases import versions
+from cros_releases import chrome100
+from cros_releases import wayback
+from cros_releases import git
+from cros_releases import kernver
 
 out_file_path = common.data_path / "data.json"
 

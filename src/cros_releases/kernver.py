@@ -4,7 +4,7 @@ import json
 import re
 from concurrent.futures import ThreadPoolExecutor
 
-import common
+from cros_releases import common
 
 script_path = common.scripts_path / "kernver.sh"
 downloads_path = common.base_path / "downloads" / "kernver"

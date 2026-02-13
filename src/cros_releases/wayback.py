@@ -5,8 +5,8 @@ import re
 from collections import defaultdict
 from datetime import timezone, datetime
 
-import common
-import versions
+from cros_releases import common
+from cros_releases import versions
 
 #this module fetches all recovery image data from web.archive.org
 

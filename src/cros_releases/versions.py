@@ -4,7 +4,7 @@ import csv
 import functools
 import time
 
-import common
+from cros_releases import common
 
 #this module fetches chrome os version numbers from the MercuryWorkshop/chromeos-versions repo
 

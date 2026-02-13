@@ -1,4 +1,4 @@
 httpx[http2]
 httpx[socks]
 httpx-retries
-git+https://github.com/ading2210/dulwich --config-settings "--build-option=--pure"
+git+https://github.com/jelmer/dulwich --config-settings "--build-option=--pure"

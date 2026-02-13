@@ -8,6 +8,7 @@ from dulwich.object_store import tree_lookup_path
 from dulwich import porcelain
 
 import versions
+import wayback
 import common
 
 repo_path = common.data_path / "repo"

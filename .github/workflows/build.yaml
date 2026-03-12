@@ -43,6 +43,7 @@ jobs:
         run: |
           set -x
           source .venv/bin/activate
+          export SKIP_KERNVER=1
           python3 main.py
 
       - name: upload database as an artifact

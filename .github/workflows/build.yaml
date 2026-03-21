@@ -10,7 +10,7 @@ jobs:
     name: Build Chrome OS releases database
     steps:
       - name: Maximize build space
-        uses: easimon/maximize-build-space@master
+        uses: smallprogram/maximize-build-space@16007771e4642069097fc3e7444638474e5db178
         with:
           root-reserve-mb: 32768
           swap-size-mb: 64
@@ -34,6 +34,7 @@ jobs:
       - name: install deps
         run: |
           set -x
+          sudo apt-get update
           sudo apt-get install -y vboot-kernel-utils binwalk pcregrep
           python3 -m venv .venv
           source .venv/bin/activate

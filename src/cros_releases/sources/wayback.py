@@ -7,6 +7,7 @@ from datetime import timezone, datetime
 
 from cros_releases import common
 from cros_releases import versions
+from cros_releases import sources
 
 #this module fetches all recovery image data from web.archive.org
 
@@ -122,7 +123,7 @@ def parse_dash_snapshots(snapshots):
   
   return data
 
-def prase_recovery_data(snapshots):
+def parse_recovery_data(snapshots):
   dl_urls = set()
   data = defaultdict(list)
 
@@ -153,38 +154,6 @@ def prase_recovery_data(snapshots):
   
   return data
 
-def fetch_modified_dates(data):
-  dates = {}
-  if dl_dates_path.exists():
-    dates = json.loads(dl_dates_path.read_text())
-  
-  i = 1
-  for board, images in data.items():
-    for image in images:
-      dl_url = image["url"]
-      
-      if dl_url in dates:
-        last_modified = dates[dl_url]
-      elif dl_url in common.dates:
-        last_modified = common.dates[dl_url]
-      
-      else:
-        print(f"HEAD ({i}) {dl_url}")
-        i += 1
-        dl_response = common.session.head(dl_url)
-        timestamp_raw = dl_response.headers["Last-Modified"]
-        
-        timestamp_pattern = "%a, %d %b %Y %H:%M:%S %Z"
-        last_modified_dt = datetime.strptime(timestamp_raw, timestamp_pattern).replace(tzinfo=timezone.utc)
-        last_modified = int(last_modified_dt.timestamp())
-        dates[dl_url] = last_modified
-      
-      image["last_modified"] = last_modified
-  
-  dates = dict(sorted(dates.items(), key=lambda x: x[1]))
-  dl_dates_path.write_text(json.dumps(dates, indent=2))
-  common.dates.update(dates)
-
 def get_wayback_data():
   data_sources = []
   downloads_path.mkdir(exist_ok=True)
@@ -197,7 +166,7 @@ def get_wayback_data():
     dash_snapshots = fetch_wayback_snapshots(chrome_dash_url, category_path)
 
     dash_data = parse_dash_snapshots(dash_snapshots)
-    fetch_modified_dates(dash_data)
+    sources.dates.fetch_modified_dates(dash_data)
     data_sources.append(dash_data)
   
   for filename in recovery_json_files:
@@ -208,8 +177,8 @@ def get_wayback_data():
     recovery_url = recovery_json_url_template.format(filename=filename)
     recovery_snapshots = fetch_wayback_snapshots(recovery_url, recovery_path)
 
-    recovery_data = prase_recovery_data(recovery_snapshots)
-    fetch_modified_dates(recovery_data)
+    recovery_data = parse_recovery_data(recovery_snapshots)
+    sources.dates.fetch_modified_dates(recovery_data)
     data_sources.append(recovery_data)
 
   return data_sources

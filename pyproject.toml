@@ -24,7 +24,7 @@ dependencies = [
   "httpx[http2]",
   "httpx[socks]",
   "httpx-retries",
-  "dulwich @ git+https://github.com/jelmer/dulwich"
+  "dulwich"
 ]
 
 [project.urls]

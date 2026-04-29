@@ -8,7 +8,7 @@ from dulwich.object_store import tree_lookup_path
 from dulwich import porcelain
 
 from cros_releases import versions
-from cros_releases import wayback
+from cros_releases import sources
 from cros_releases import common
 
 repo_path = common.data_path / "repo"
@@ -53,67 +53,6 @@ def parse_board_data(board, board_data, dl_urls):
       else:
         parse_board_data(board, value, dl_urls)
 
-def parse_dash_snapshots(snapshots_dir):
-  dl_urls = set()
-
-  for snapshot in get_snapshots(snapshots_dir):
-    for board, board_data in snapshot["builds"].items():
-      parse_board_data(board, board_data, dl_urls)
-  
-  data = defaultdict(list)
-  for dl_url in dl_urls:
-    matches = re.findall(dl_url_regex, dl_url)[0]
-    platform_version, board, channel = matches
-
-    chrome_version = versions.get_chrome_version(platform_version)
-    if not chrome_version:
-      print(f"Warning: could not find chrome version for {dl_url}")
-      continue
-
-    image = {
-      "platform_version": platform_version,
-      "chrome_version": chrome_version,
-      "channel": channel,
-      "last_modified": None,
-      "url": dl_url
-    }
-    data[board].append(image)
-  
-  fetch_modified_dates(data)
-  return data
-
-def prase_recovery_data(snapshots_dir):
-  dl_urls = set()
-  data = defaultdict(list)
-
-  for snapshot in get_snapshots(snapshots_dir):
-    for item in snapshot:
-      matches = re.findall(dl_url_regex, item["url"])[0]
-      platform_version, board, channel = matches
-      common.hwid_matches[board].add(item["hwidmatch"])
-
-      if "chrome_version" in item:
-        chrome_version = item["chrome_version"]
-      else:
-        chrome_version = versions.get_chrome_version(platform_version)
-        if not chrome_version:
-          print(f"Warning: could not find chrome version for {item['url']}")
-          continue
-
-      image = {
-        "platform_version": platform_version,
-        "chrome_version": chrome_version,
-        "channel": channel,
-        "last_modified": None,
-        "url": item["url"]
-      }
-      if not board in data:
-        data[board] = []
-      data[board].append(image)
-  
-  fetch_modified_dates(data)
-  return data
-
 def fetch_modified_dates(data):
   dates = {}
   if dl_dates_path.exists():
@@ -155,8 +94,8 @@ def get_git_data():
       data[board_name] = list(filter(lambda x: x["platform_version"] != "0.0.0", images))
     data_sources.append(data)
 
-  data_sources.append(parse_dash_snapshots(sources_path / "dash"))
-  data_sources.append(prase_recovery_data(sources_path / "recovery"))
+  data_sources.append(sources.dash.parse_dash_snapshots(sources_path / "dash"))
+  data_sources.append(sources.recovery.parse_recovery_data(sources_path / "recovery"))
 
   return data_sources
 
@@ -175,11 +114,11 @@ def migrate_to_git():
   #migrate wayback snapshots
   migrated_files = []
   dt_now = datetime.utcnow().replace(microsecond=0, tzinfo=timezone.utc)
-  for path in wayback.downloads_path.rglob("*.json"):
+  for path in sources.wayback.downloads_path.rglob("*.json"):
     if not path.stem.isdigit():
       continue
     dt = datetime.strptime(path.stem, "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc)
-    relative_path = path.relative_to(wayback.downloads_path)
+    relative_path = path.relative_to(sources.wayback.downloads_path)
     new_path = repo_path / "sources" / f"{relative_path.parent}.json"
     migrated_files.append((dt, path, new_path))
   

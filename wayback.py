@@ -46,7 +46,7 @@ def fetch_wayback_cdx(cdx_api_url, path):
       return cdx_json["data"]
   
   print(f"GET {cdx_api_url}")
-  cdx_response = common.session.get(cdx_api_url)
+  cdx_response = common.session.get(cdx_api_url, timeout=600)
   cdx_data = cdx_response.json()
   cdx_json = {
     "updated": time.time(),
@@ -70,7 +70,7 @@ def fetch_wayback_snapshots(url, path):
       identity_url = f"https://web.archive.org/web/{timestamp}id_/{url}"
 
       print(f"GET {identity_url}")
-      snapshot_response = common.session.get(identity_url)
+      snapshot_response = common.session.get(identity_url, timeout=60)
       snapshot = snapshot_response.json()
       snapshot_path.write_text(json.dumps(snapshot, indent=2))
     

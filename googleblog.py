@@ -55,7 +55,7 @@ def fetch_blog_page(url):
   
   next_link = document.cssselect(".blog-pager-newer-link")[0]
   next_url = next_link.get("href")
-  if next_url == "https://chromereleases.googleblog.com/":
+  if next_url == "https://chromereleases.googleblog.com/" or next_url == url:
     next_url = None
   
   page_info = {

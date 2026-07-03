@@ -16,9 +16,9 @@ clean_up () {
 
 check_file_type() {
   local img_url="$1"
-  local filename="$(basename "$img_url")"
-  curl -s --header "Range: bytes=0-$((512*1024))" "$img_url" \
-    | file - -b --mime-type
+  local img_part_bin="$temp_dir/img_part.bin"
+  curl -s --header "Range: bytes=0-$((512*1024))" "$img_url" -o "$img_part_bin"
+  file "$img_part_bin" -b --mime-type
 }
 
 stream_zip() {

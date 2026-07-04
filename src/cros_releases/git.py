@@ -110,6 +110,11 @@ def migrate_to_git():
 def commit_unstaged():
   unstaged_files = [filename.decode() for filename in repo_status().unstaged]
   unstaged_paths = [repo_path / filename for filename in unstaged_files]
+
+  if not unstaged_files:
+    print("No updated files to commit.")
+    return
+  
   print(f"Updated files:")
   print("\n".join(f"  {filename}" for filename in unstaged_files))
 

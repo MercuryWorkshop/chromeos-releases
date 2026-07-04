@@ -1,18 +1,25 @@
+import json
+import re
 from collections import defaultdict
 
+from cros_releases import common
 from cros_releases import versions
 from cros_releases import git
 from cros_releases import sources
 
-recovery_json_url_template = "https://dl.google.com/dl/edgedl/chromeos/recovery/{filename}"
+recovery_url_template = "https://dl.google.com/dl/edgedl/chromeos/recovery/{filename}"
+recovery_filenames = [
+  "recovery.json", "recovery2.json", "onhub_recovery.json", "workspaceHardware_recovery2.json", 
+  "cloudready_recovery.json", "cloudready_recovery2.json"
+]
 
-def parse_recovery_data(snapshots_dir):
+def parse_recovery_data(snapshots):
   dl_urls = set()
   data = defaultdict(list)
 
-  for snapshot in git.get_snapshots(snapshots_dir):
+  for snapshot in snapshots:
     for item in snapshot:
-      matches = re.findall(dl_url_regex, item["url"])[0]
+      matches = re.findall(common.dl_url_regex, item["url"])[0]
       platform_version, board, channel = matches
       common.hwid_matches[board].add(item["hwidmatch"])
 
@@ -38,9 +45,17 @@ def parse_recovery_data(snapshots_dir):
   sources.dates.fetch_modified_dates(data)
   return data
 
-def get_recovery_data():
-  clone_repo()
-  return parse_recovery_data(sources_path / "recovery")
+def fetch_recovery_data():
+  snapshots = []
+  for filename in recovery_filenames:
+    recovery_url = recovery_url_template.format(filename=filename)
+    snapshot_path = git.recovery_sources_path / filename
 
-def save_recovery_data():
-  pass
+    print(f"GET {recovery_url}")
+    response = common.session.get(recovery_url)
+    response.raise_for_status()
+    snapshot = response.json()
+    snapshots.append(snapshot)
+    snapshot_path.write_text(json.dumps(snapshot, indent=2))
+  
+  return parse_recovery_data(snapshots)

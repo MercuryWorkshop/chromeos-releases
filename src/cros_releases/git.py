@@ -13,10 +13,12 @@ from cros_releases import common
 
 repo_path = common.data_path / "repo"
 sources_path = repo_path / "sources"
+dash_sources_path = sources_path / "dash"
+recovery_sources_path = sources_path / "recovery"
+
 repo_url = "https://github.com/MercuryWorkshop/chromeos-releases-data"
 commit_author="GitHub Actions <>"
 
-dl_url_regex = r"https://dl\.google\.com/dl/edgedl/chromeos/recovery/chromeos_([\d\.]+?)_(.+?)_recovery_(.+?)_.+?\.bin\.zip"
 dl_dates_path = sources_path / "dates.json"
 dl_kernver_path = sources_path / "kernver.json"
 
@@ -26,6 +28,10 @@ def clone_repo():
     print(f"Cloning {repo_url}")
     porcelain.clone(repo_url, repo_path)
     print("\nDone cloning.")
+
+def pull_repo():
+  clone_repo()
+  porcelain.pull(repo_path)
 
 def get_past_revisions(path):
   with porcelain.open_repo_closing(repo_path) as repo:
@@ -39,50 +45,6 @@ def get_snapshots(snapshots_dir):
     for snapshot_data in get_past_revisions(json_path):
       yield json.loads(snapshot_data)
 
-def parse_board_data(board, board_data, dl_urls):
-  for key, value in board_data.items():
-    if key == "pushRecoveries":
-      dl_urls |= set(value.values())
-    elif key == "brandNames":
-      common.device_names[board] |= set(value)
-
-    elif isinstance(value, dict):
-      if "version" in value:
-        if not value["version"] in common.versions:
-          common.versions[value["version"]] = value["chromeVersion"]
-      else:
-        parse_board_data(board, value, dl_urls)
-
-def fetch_modified_dates(data):
-  dates = {}
-  if dl_dates_path.exists():
-    dates = json.loads(dl_dates_path.read_text())
-  
-  for board, images in data.items():
-    for image in images:
-      dl_url = image["url"]
-      
-      if dl_url in dates:
-        last_modified = dates[dl_url]
-      elif dl_url in common.dates:
-        last_modified = common.dates[dl_url]
-      
-      else:
-        print(f"HEAD {dl_url}")
-        dl_response = common.session.head(dl_url)
-        timestamp_raw = dl_response.headers["Last-Modified"]
-        
-        timestamp_pattern = "%a, %d %b %Y %H:%M:%S %Z"
-        last_modified_dt = datetime.strptime(timestamp_raw, timestamp_pattern).replace(tzinfo=timezone.utc)
-        last_modified = int(last_modified_dt.timestamp())
-        dates[dl_url] = last_modified
-      
-      image["last_modified"] = last_modified
-  
-  dates = dict(sorted(dates.items(), key=lambda x: x[1]))
-  dl_dates_path.write_text(json.dumps(dates, indent=2))
-  common.dates.update(dates)
-
 def get_git_data():
   clone_repo()
   data_sources = []
@@ -94,8 +56,8 @@ def get_git_data():
       data[board_name] = list(filter(lambda x: x["platform_version"] != "0.0.0", images))
     data_sources.append(data)
 
-  data_sources.append(sources.dash.parse_dash_snapshots(sources_path / "dash"))
-  data_sources.append(sources.recovery.parse_recovery_data(sources_path / "recovery"))
+  data_sources.append(sources.dash.parse_dash_snapshots(get_snapshots(dash_sources_path)))
+  data_sources.append(sources.recovery.parse_recovery_data(get_snapshots(recovery_sources_path)))
 
   return data_sources
 
@@ -114,11 +76,13 @@ def migrate_to_git():
   #migrate wayback snapshots
   migrated_files = []
   dt_now = datetime.utcnow().replace(microsecond=0, tzinfo=timezone.utc)
-  for path in sources.wayback.downloads_path.rglob("*.json"):
+  wayback_downloads_path = common.base_path / "downloads" / "wayback"
+
+  for path in wayback_downloads_path.rglob("*.json"):
     if not path.stem.isdigit():
       continue
     dt = datetime.strptime(path.stem, "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc)
-    relative_path = path.relative_to(sources.wayback.downloads_path)
+    relative_path = path.relative_to(wayback_downloads_path)
     new_path = repo_path / "sources" / f"{relative_path.parent}.json"
     migrated_files.append((dt, path, new_path))
   

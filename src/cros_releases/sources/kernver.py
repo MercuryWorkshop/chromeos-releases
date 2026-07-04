@@ -5,10 +5,10 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 
 from cros_releases import common
+from cros_releases import git
 
 script_path = common.scripts_path / "kernver.sh"
 downloads_path = common.base_path / "downloads" / "kernver"
-dl_kernver_path = downloads_path / "kernver.json"
 
 os.environ["TMPDIR"] = str(downloads_path)
 kernel_versions = {}
@@ -26,13 +26,13 @@ def get_kernel_version(image):
   image["kernel_version"] = int(kernver)
   image["linux_version"] = linux_version
   kernel_versions[image["url"]] = [int(kernver), linux_version]
-  dl_kernver_path.write_text(json.dumps(sort_kernel_versions(), indent=2))
+  git.dl_kernver_path.write_text(json.dumps(sort_kernel_versions(), indent=2))
  
 def get_kernel_versions(data):
   global kernel_versions
   queued_images = []
-  if dl_kernver_path.exists():
-    kernel_versions = json.loads(dl_kernver_path.read_text())
+  if git.dl_kernver_path.exists():
+    kernel_versions = json.loads(git.dl_kernver_path.read_text())
 
   for board in data.values():
     for image in board["images"]:

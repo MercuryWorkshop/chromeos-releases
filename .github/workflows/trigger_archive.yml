@@ -14,7 +14,7 @@ jobs:
       
       - name: trigger archives
         run: |
-          env TOKEN="${{ secrets.IA_API_KEY }}" ./src/scripts/cron_archive.sh
+          env TOKEN="${{ secrets.IA_API_KEY }}" ./src/cros_releases/scripts/cron_archive.sh
 
   workflow-keepalive:
     if: github.event_name == 'schedule'

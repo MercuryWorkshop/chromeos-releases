@@ -1,7 +1,7 @@
 on:
   push:
   schedule:
-    - cron: '0 0 * * 6'
+    - cron: '0 0 * * *'
     
 jobs:
   publish:
@@ -9,17 +9,6 @@ jobs:
       
     name: Build Chrome OS releases database
     steps:
-      - name: Maximize build space
-        uses: smallprogram/maximize-build-space@16007771e4642069097fc3e7444638474e5db178
-        with:
-          root-reserve-mb: 32768
-          swap-size-mb: 64
-          remove-dotnet: 'true'
-          remove-android: 'true'
-          remove-haskell: 'true'
-          remove-codeql: 'true'
-          remove-docker-images: 'true'
-
       - name: download repo
         uses: actions/checkout@v4
       
@@ -35,23 +24,22 @@ jobs:
         run: |
           set -x
           sudo apt-get update
-          sudo apt-get install -y vboot-kernel-utils binwalk pcregrep
+          sudo apt-get install -y vboot-kernel-utils busybox binwalk pcregrep
           python3 -m venv .venv
           source .venv/bin/activate
-          pip3 install -r requirements.txt
-      
+          pip3 install -e .
+
       - name: run build
         run: |
           set -x
           source .venv/bin/activate
-          export SKIP_KERNVER=1
-          python3 main.py
+          python3 -m cros_releases --commit
 
       - name: upload database as an artifact
         uses: actions/upload-artifact@v4
         with:
           name: data
-          path: data/data.json
+          path: data/repo/data.json
           compression-level: 9
       
       - name: upload downloads as an artifact
@@ -64,17 +52,8 @@ jobs:
       - name: publish database
         run: |
           set -x
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "<>"
-          cd data
-          git clone "https://${{ secrets.GH_TOKEN }}@github.com/MercuryWorkshop/chromeos-releases-data" -b main
-          cd chromeos-releases-data
-          cp ../data.json ./
-          if [ ! "$(git status -s)" ]; then
-            exit 0
-          fi
-          git add .
-          git commit -m "update data.json"
+          cd data/repo
+          git remote set-url --push origin "https://${{ secrets.GH_TOKEN }}@github.com/MercuryWorkshop/chromeos-releases-data"
           git push origin main
 
   workflow-keepalive:

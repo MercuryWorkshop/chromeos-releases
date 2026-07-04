@@ -12,7 +12,7 @@ version = "1.0.0"
 authors = [
   {name="ading2210"},
 ]
-description = "An implementation of a Wisp proxy server in Python"
+description = "A script for building a database of all Chrome OS recovery images"
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [

@@ -1,12 +1,15 @@
 #!/bin/bash
 
 set -e
+if [ "$DEBUG" ]; then
+  set -x
+fi
 
 #needed for fdisk
 export PATH="/sbin:$PATH"
 
 temp_dir="$(mktemp -d)"
-linux_version_regex='(\d+\.\d+\.\d+-\d+-[0-9a-g]+)|Linux version (\d+\.\d+\.\d+-?\d*-?[0-9a-g]*)'
+linux_version_regex='(\d+\.\d+\.\d+-\d+-[0-9a-g]+)|Linux version (\d+\.\d+\.\d+-?\d*-?[\w-]*)'
 
 clean_up () {
   local status="$?"
@@ -17,7 +20,9 @@ clean_up () {
 check_file_type() {
   local img_url="$1"
   local img_part_bin="$temp_dir/img_part.bin"
-  curl -s --header "Range: bytes=0-$((512*1024))" "$img_url" -o "$img_part_bin"
+  if [ ! -f "$img_part_bin" ]; then
+    curl -s --header "Range: bytes=0-$((512*1024))" "$img_url" -o "$img_part_bin"
+  fi
   file "$img_part_bin" -b --mime-type
 }
 
@@ -55,13 +60,13 @@ get_linux_version() {
   strings "$kernel_bin" \
     | grep_regex_strict -o1 -o2 "$linux_version_regex" || return 0
   
-  local binwalk_out="$(cd "$temp_dir"; binwalk --extract "$kernel_bin")"
+  local binwalk_out="$(cd "$temp_dir"; binwalk --extract --dd=gzip --dd=lz4 "$kernel_bin" 2>/dev/null)"
   strings "$temp_dir"/*.extracted/* \
     | grep_regex_strict -o1 -o2 "$linux_version_regex" || return 0
   
   local lz4_offset="$(echo "$binwalk_out" | grep_regex -o1 "(\d+).+?LZ4 compressed data" | head -n1)"
   dd if="$kernel_bin" iflag=skip_bytes,count_bytes skip="$lz4_offset" status=none \
-    | lz4 -d \
+    | lz4 -d 2>/dev/null \
     | strings \
     | grep_regex_strict -o1 -o2 "$linux_version_regex" || return 0
   

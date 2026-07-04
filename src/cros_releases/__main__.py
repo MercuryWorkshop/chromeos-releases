@@ -57,7 +57,7 @@ def merge_data(*data_sources):
   
   return dict(sorted(merged.items()))
 
-if __name__ == "__main__":
+def main(args):
   print("Loading versions list")
   versions.read_all_versions()
 
@@ -81,3 +81,16 @@ if __name__ == "__main__":
   print("Done!")
   common.data_path.mkdir(exist_ok=True)
   out_file_path.write_text(json.dumps(merged_data, indent=2))
+
+  if args.commit:
+    git.commit_unstaged()
+
+if __name__ == "__main__":
+  parser = argparse.ArgumentParser(
+    prog="chromeos-releases",
+    description=f"A script for building a database of all Chrome OS recovery images"
+  )
+  parser.add_argument("--commit", action="store_true", help="Commit new changes made by the script to the git repo.")
+  args = parser.parse_args()
+  
+  main(args)

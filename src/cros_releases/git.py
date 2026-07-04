@@ -33,6 +33,9 @@ def pull_repo():
   clone_repo()
   porcelain.pull(repo_path)
 
+def repo_status():
+  return porcelain.status(repo_path)
+
 def get_past_revisions(path):
   with porcelain.open_repo_closing(repo_path) as repo:
     for entry in repo.get_walker(paths=[str(path).encode()]):
@@ -104,5 +107,13 @@ def migrate_to_git():
   
   print("Done migrating.")
 
-if __name__ == "__main__":
-  migrate_to_git()
+def commit_unstaged():
+  unstaged_files = [filename.decode() for filename in repo_status().unstaged]
+  unstaged_paths = [repo_path / filename for filename in unstaged_files]
+  print(f"Updated files:")
+  print("\n".join(f"  {filename}" for filename in unstaged_files))
+
+  dt_now = datetime.utcnow().replace(microsecond=0, tzinfo=timezone.utc)
+  with porcelain.open_repo_closing(repo_path) as repo:
+    for unstaged_path in unstaged_paths:
+      make_commit(repo, unstaged_path, dt_now)

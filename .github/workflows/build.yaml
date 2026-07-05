@@ -49,13 +49,6 @@ jobs:
           path: downloads/
           compression-level: 9
 
-      - name: publish database
-        run: |
-          set -x
-          cd data/repo
-          git remote set-url --push origin "https://${{ secrets.GH_TOKEN }}@github.com/MercuryWorkshop/chromeos-releases-data"
-          git push origin main
-
   workflow-keepalive:
     if: github.event_name == 'schedule'
     runs-on: ubuntu-latest

@@ -36,9 +36,9 @@ def get_kernel_versions(data):
 
   for board in data.values():
     for image in board["images"]:
-      if "kernel_version" in image:
+      if "kernel_version" in image and image["chrome_version"] != "149.0.7827.226":
         continue
-      if image["url"] in kernel_versions:
+      if image["url"] in kernel_versions and image["chrome_version"] != "149.0.7827.226":
         kernver, linux_version = kernel_versions[image["url"]]
         image["kernel_version"] = kernver
         image["linux_version"] = linux_version

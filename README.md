@@ -1,6 +1,6 @@
 # Chrome OS Releases Database
 
-This repo contains scripts for building a database of all Chrome OS recovery images. The generated data is located at the [chromeos-releases-data](https://github.com/MercuryWorkshop/chromeos-releases-data) repo, which is updated weekly. 
+This repo contains scripts for building a database of all Chrome OS recovery images. The generated data is located at the [chromeos-releases-data](https://github.com/MercuryWorkshop/chromeos-releases-data) repo, which is updated daily. 
 
 ## Explanation
 

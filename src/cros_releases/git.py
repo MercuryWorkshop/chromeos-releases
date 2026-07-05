@@ -1,6 +1,7 @@
 import json
 import shutil
 import re
+import io
 from collections import defaultdict
 from datetime import timezone, datetime
 
@@ -26,12 +27,8 @@ def clone_repo():
   common.data_path.mkdir(exist_ok=True)
   if not repo_path.exists():
     print(f"Cloning {repo_url}")
-    porcelain.clone(repo_url, repo_path)
-    print("\nDone cloning.")
-
-def pull_repo():
-  clone_repo()
-  porcelain.pull(repo_path)
+    porcelain.clone(repo_url, repo_path, errstream=io.BytesIO())
+    print("Done cloning.")
 
 def repo_status():
   return porcelain.status(repo_path)

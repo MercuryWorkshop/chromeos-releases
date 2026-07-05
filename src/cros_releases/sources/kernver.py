@@ -48,5 +48,3 @@ def get_kernel_versions(data):
   downloads_path.mkdir(parents=True, exist_ok=True)
   with ThreadPoolExecutor(max_workers=32) as executor:
     list(executor.map(get_kernel_version, queued_images))
-
-  return data

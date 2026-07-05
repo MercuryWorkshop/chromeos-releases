@@ -28,9 +28,6 @@ def merge_data(*data_sources):
   
   for board, images_set in merged_sets.items():
     images = [dict(image) for image in images_set]
-    for image in images:
-      image["chrome_version"] = versions.get_chrome_version(image["platform_version"])
-
     images.append({
       "platform_version": "0.0.0",
       "chrome_version": "0.0.0.0",
@@ -75,8 +72,11 @@ def main(args):
   print("Merging data sources")
   merged_data = merge_data(chrome100_data, dash_data, recovery_data, *git_data)
 
+  print("Mapping platform versions to chrome versions")
+  versions.apply_chrome_versions(merged_data)
+
   print("Fetching kernel versions from image data")
-  merged_data = sources.kernver.get_kernel_versions(merged_data)
+  sources.kernver.get_kernel_versions(merged_data)
 
   print("Done!")
   common.data_path.mkdir(exist_ok=True)

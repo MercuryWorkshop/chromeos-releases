@@ -53,3 +53,10 @@ def get_chrome_version(platform_version):
   if best_match:
     return common.versions[best_match]
   return None
+
+def apply_chrome_versions(data):
+  for board in data.values():
+    for image in board["images"]:
+      if image["platform_version"] == "0.0.0": 
+        continue
+      image["chrome_version"] = get_chrome_version(image["platform_version"])

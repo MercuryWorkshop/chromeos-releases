@@ -79,7 +79,7 @@ get_kernver() {
   local img_bin="$temp_dir/image.bin"
   local kernel_bin="$temp_dir/kernel.bin"
 
-  truncate "$img_bin" -s "10G"
+  truncate "$img_bin" -s "30G"
   stream_zip "$img_url" \
     | dd of="$img_bin" iflag=fullblock bs=1M count=1 conv=notrunc status=none
 

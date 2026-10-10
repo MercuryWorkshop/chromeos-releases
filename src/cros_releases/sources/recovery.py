@@ -1,4 +1,3 @@
-import json
 import re
 from collections import defaultdict
 
@@ -50,12 +49,7 @@ def fetch_recovery_data():
   for filename in recovery_filenames:
     recovery_url = recovery_url_template.format(filename=filename)
     snapshot_path = git.recovery_sources_path / filename
-
-    print(f"GET {recovery_url}")
-    response = common.session.get(recovery_url)
-    response.raise_for_status()
-    snapshot = response.json()
+    snapshot = common.download_json(recovery_url, snapshot_path)
     snapshots.append(snapshot)
-    snapshot_path.write_text(json.dumps(snapshot, indent=2))
   
   return parse_recovery_data(snapshots)

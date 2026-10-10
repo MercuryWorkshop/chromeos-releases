@@ -67,6 +67,8 @@ def main(args):
   dash_data = sources.dash.fetch_dash_data()
   recovery_data = sources.recovery.fetch_recovery_data()
 
+  sources.googlebook.fetch_googlebook_data()
+
   print("Merging data sources")
   merged_data = merge_data(chrome100_data, dash_data, recovery_data, *git_data)
 

@@ -1,4 +1,3 @@
-import json
 import re
 from collections import defaultdict
 
@@ -58,12 +57,7 @@ def fetch_dash_data():
   for category in dash_categories:
     dash_url = dash_url_template.format(category=category)
     snapshot_path = git.dash_sources_path / f"{category.lower().replace(' ', '_')}.json"
-
-    print(f"GET {dash_url}")
-    response = common.session.get(dash_url)
-    response.raise_for_status()
-    snapshot = response.json()
+    snapshot = common.download_json(dash_url, snapshot_path)
     snapshots.append(snapshot)
-    snapshot_path.write_text(json.dumps(snapshot, indent=2))
   
   return parse_dash_snapshots(snapshots)

@@ -1,4 +1,5 @@
 import pathlib
+import json
 from collections import defaultdict
 
 import httpx
@@ -31,3 +32,11 @@ brand_name_overrides = {
 }
 
 dl_url_regex = r"https://dl\.google\.com/dl/edgedl/chromeos/recovery/chromeos_([\d\.]+?)_(.+?)_recovery_(.+?)_.+?\.bin\.zip"
+
+def download_json(url, path):
+  print(f"GET {url}")
+  response = session.get(url)
+  response.raise_for_status()
+  data = response.json()
+  path.write_text(json.dumps(data, indent=2))
+  return data

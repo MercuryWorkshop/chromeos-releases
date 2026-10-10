@@ -16,6 +16,7 @@ repo_path = common.data_path / "repo"
 sources_path = repo_path / "sources"
 dash_sources_path = sources_path / "dash"
 recovery_sources_path = sources_path / "recovery"
+googlebook_sources_path = sources_path / "googlebook"
 
 repo_url = "https://github.com/MercuryWorkshop/chromeos-releases-data"
 commit_author="GitHub Actions <>"
@@ -70,15 +71,16 @@ def make_commit(repo, path, dt):
   )
 
 def commit_unstaged():
-  unstaged_files = [filename.decode() for filename in repo_status().unstaged]
-  unstaged_paths = [repo_path / filename for filename in unstaged_files]
+  status = porcelain.status(repo_path)
+  unstaged_paths = [repo_path / filename.decode() for filename in status.unstaged + status.untracked]
+  unstaged_paths = sum([list(path.rglob("*.*")) or [path] for path in unstaged_paths], [])
 
-  if not unstaged_files:
+  if not unstaged_paths:
     print("No updated files to commit.")
     return
   
   print(f"Updated files:")
-  print("\n".join(f"  {filename}" for filename in unstaged_files))
+  print("\n".join(f"  {path.relative_to(repo_path)}" for path in unstaged_paths))
 
   dt_now = datetime.utcnow().replace(microsecond=0, tzinfo=timezone.utc)
   with porcelain.open_repo_closing(repo_path) as repo:

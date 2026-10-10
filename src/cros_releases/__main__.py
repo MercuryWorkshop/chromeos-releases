@@ -60,8 +60,6 @@ def main(args):
 
   print("Updating git repo")
   git.clone_repo()
-  if not git.sources_path.exists():
-    git.migrate_to_git()
 
   print("Loading data sources")
   chrome100_data = sources.chrome100.get_chrome100_data()

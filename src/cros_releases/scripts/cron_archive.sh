@@ -14,6 +14,7 @@ urls=(
   "https://dl.google.com/dl/edgedl/chromeos/recovery/workspaceHardware_recovery2.json"
   "https://dl.google.com/dl/edgedl/chromeos/recovery/cloudready_recovery.json"
   "https://dl.google.com/dl/edgedl/chromeos/recovery/cloudready_recovery2.json"
+  "https://dl.google.com/dl/edgedl/device/recovery/production_recovery.json"
 )
 
 for url in "${urls[@]}"; do
